@@ -3,716 +3,1302 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SAM — L'Expérience Héros</title>
+<title>SAM — Une nuit avec Sam</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap');
 
-  :root {
-    --yellow: #F5C800;
-    --yellow-dim: rgba(245,200,0,0.15);
-    --yellow-mid: rgba(245,200,0,0.35);
-    --dark: #0F0F1A;
-    --surface: #16161F;
-    --surface2: #1D1D2B;
-    --border: rgba(255,255,255,0.10);
-    --border-bright: rgba(255,255,255,0.22);
-    --text: #F0EFE8;
-    --muted: rgba(240,239,232,0.45);
-    --blue: #00C6FF;
-    --green: #27E07A;
-    --red: #FF4F4F;
-    --radius: 16px;
-    --radius-sm: 10px;
-  }
+:root {
+  --yellow: #F5C800;
+  --yellow-bg: rgba(245,200,0,0.12);
+  --yellow-border: rgba(245,200,0,0.35);
+  --dark: #0C0C14;
+  --surface: #13131E;
+  --surface2: #1A1A28;
+  --surface3: #212134;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.16);
+  --text: #EEEEE8;
+  --muted: rgba(238,238,232,0.45);
+  --muted2: rgba(238,238,232,0.25);
+  --blue: #00C6FF;
+  --green: #22E07A;
+  --red: #FF4F4F;
+  --purple: #A78BFA;
+  --r: 14px;
+  --r-sm: 10px;
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  body {
-    font-family: 'Inter', sans-serif;
-    background: var(--dark);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding: 2rem 1rem 4rem;
-    overflow-x: hidden;
-  }
+html { scroll-behavior: smooth; }
 
-  /* noise overlay */
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none; z-index: 0;
-  }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--dark);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
-  .app {
-    width: 100%;
-    max-width: 480px;
-    position: relative;
-    z-index: 1;
-  }
+/* ─── LAYOUT ─── */
+.app {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 0 1.25rem 5rem;
+  min-height: 100vh;
+}
 
-  /* SCREENS */
-  .screen { display: none; flex-direction: column; align-items: center; animation: fadeUp 0.35s ease; }
-  .screen.active { display: flex; }
-  @keyframes fadeUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+.screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 3rem;
+  animation: fadeUp 0.4s ease both;
+}
+.screen.active { display: flex; }
 
-  /* LOGO SAM */
-  .sam-face {
-    width: 72px; height: 72px;
-    background: var(--yellow);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 1.5rem;
-    position: relative;
-  }
-  .sam-face-inner { display: flex; gap: 10px; }
-  .sam-eye {
-    width: 20px; height: 20px;
-    background: var(--dark);
-    border-radius: 50%;
-    position: relative;
-  }
-  .sam-eye::after {
-    content: '';
-    width: 7px; height: 7px;
-    background: var(--yellow);
-    border-radius: 50%;
-    position: absolute; top: 2px; right: 1px;
-  }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes pulse {
+  0%,100% { transform: scale(1); }
+  50%      { transform: scale(1.06); }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-  /* TYPOGRAPHY */
-  .title-xl {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(28px, 7vw, 38px);
-    font-weight: 800;
-    color: var(--yellow);
-    text-align: center;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-    margin-bottom: 0.75rem;
-  }
-  .title-lg {
-    font-family: 'Syne', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--text);
-    text-align: center;
-    line-height: 1.3;
-    margin-bottom: 0.5rem;
-  }
-  .subtitle {
-    font-size: 14px;
-    color: var(--muted);
-    text-align: center;
-    line-height: 1.7;
-    margin-bottom: 2rem;
-    max-width: 340px;
-  }
+/* ─── SAM FACE ─── */
+.sam-face {
+  width: 72px; height: 72px;
+  background: var(--yellow);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1.5rem;
+  flex-shrink: 0;
+}
+.sam-face.sm { width: 52px; height: 52px; margin-bottom: 1rem; }
+.sam-eyes-row { display: flex; gap: 9px; }
+.sam-eye {
+  width: 18px; height: 18px;
+  background: var(--dark);
+  border-radius: 50%;
+  position: relative;
+}
+.sam-face.sm .sam-eye { width: 13px; height: 13px; }
+.sam-eye::after {
+  content: '';
+  width: 6px; height: 6px;
+  background: var(--yellow);
+  border-radius: 50%;
+  position: absolute; top: 2px; right: 1px;
+}
+.sam-face.sm .sam-eye::after { width: 4px; height: 4px; }
 
-  /* PILIER BADGE */
-  .pilier-tag {
-    font-family: 'Syne', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--yellow);
-    background: var(--yellow-dim);
-    border: 1px solid rgba(245,200,0,0.3);
-    border-radius: 40px;
-    padding: 5px 14px;
-    margin-bottom: 1.5rem;
-  }
+/* ─── TYPOGRAPHY ─── */
+.title-hero {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(32px, 9vw, 48px);
+  font-weight: 800;
+  color: var(--yellow);
+  text-align: center;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 1rem;
+}
+.title-lg {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px; font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
+}
+.title-md {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px; font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.4;
+  margin-bottom: 1.5rem;
+}
+.sub {
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.75;
+  margin-bottom: 2rem;
+  max-width: 360px;
+}
 
-  /* PROGRESS */
-  .progress-track {
-    width: 100%;
-    height: 3px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 3px;
-    margin-bottom: 2rem;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 3px;
-    background: var(--yellow);
-    border-radius: 3px;
-    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
-  }
+/* ─── TAGS ─── */
+.tag {
+  display: inline-block;
+  font-family: 'Syne', sans-serif;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--yellow);
+  background: var(--yellow-bg);
+  border: 1px solid var(--yellow-border);
+  border-radius: 40px;
+  padding: 5px 14px;
+  margin-bottom: 1.25rem;
+}
+.tag.blue { color: var(--blue); background: rgba(0,198,255,0.1); border-color: rgba(0,198,255,0.3); }
+.tag.green { color: var(--green); background: rgba(34,224,122,0.1); border-color: rgba(34,224,122,0.3); }
 
-  /* BUTTONS */
-  .btn {
-    width: 100%;
-    max-width: 360px;
-    padding: 15px 24px;
-    border-radius: 40px;
-    font-family: 'Syne', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.15s, opacity 0.15s;
-    border: none;
-    display: block;
-    text-align: center;
-  }
-  .btn:active { transform: scale(0.97); }
-  .btn-yellow { background: var(--yellow); color: var(--dark); }
-  .btn-yellow:hover { opacity: 0.92; }
-  .btn-outline {
-    background: transparent;
-    color: var(--yellow);
-    border: 1.5px solid rgba(245,200,0,0.5);
-    margin-top: 0.75rem;
-  }
-  .btn-outline:hover { background: var(--yellow-dim); }
-  .btn-ghost {
-    background: rgba(255,255,255,0.06);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-  .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+/* ─── PROGRESS ─── */
+.progress-wrap { width: 100%; margin-bottom: 2rem; }
+.progress-track {
+  width: 100%; height: 3px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 3px; overflow: hidden;
+}
+.progress-fill {
+  height: 3px;
+  background: var(--yellow);
+  border-radius: 3px;
+  transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+.progress-label {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: var(--muted2);
+  margin-bottom: 8px;
+  font-family: 'Syne', sans-serif;
+  letter-spacing: 0.06em;
+}
 
-  /* QUIZ OPTIONS */
-  .opt-list { width: 100%; display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.5rem; }
-  .opt-btn {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 14px 18px;
-    color: var(--text);
-    font-size: 14px;
-    cursor: pointer;
-    text-align: left;
-    line-height: 1.5;
-    transition: all 0.18s;
-    font-family: 'Inter', sans-serif;
-  }
-  .opt-btn:hover { border-color: var(--yellow); background: var(--yellow-dim); }
-  .opt-btn.picked { border-color: var(--yellow); background: var(--yellow-mid); color: var(--yellow); }
-  .opt-btn.correct { border-color: var(--green); background: rgba(39,224,122,0.12); color: #7DF5AA; }
-  .opt-btn.wrong { border-color: var(--red); background: rgba(255,79,79,0.1); color: #F09595; }
-  .opt-btn:disabled { cursor: default; }
+/* ─── BUTTONS ─── */
+.btn {
+  display: block;
+  width: 100%; max-width: 380px;
+  padding: 15px 24px;
+  border-radius: 40px;
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 700;
+  cursor: pointer;
+  border: none;
+  text-align: center;
+  transition: transform 0.14s, opacity 0.14s, background 0.2s;
+  text-decoration: none;
+}
+.btn:active { transform: scale(0.97); }
+.btn-yellow { background: var(--yellow); color: var(--dark); }
+.btn-yellow:hover { opacity: 0.9; }
+.btn-outline {
+  background: transparent;
+  color: var(--yellow);
+  border: 1.5px solid var(--yellow-border);
+  margin-top: 0.75rem;
+}
+.btn-outline:hover { background: var(--yellow-bg); }
+.btn-ghost {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border2);
+  margin-top: 0.75rem;
+}
+.btn-ghost:hover { background: var(--surface3); }
+.btn-green { background: var(--green); color: #06200F; }
+.btn-green:hover { opacity: 0.9; }
 
-  /* VRAI/FAUX CARDS */
-  .vf-card {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.25rem;
-    margin-bottom: 12px;
-    transition: border-color 0.3s;
-  }
-  .vf-card.c-true { border-color: var(--green); }
-  .vf-card.c-false { border-color: var(--red); }
-  .vf-statement { font-size: 14px; color: var(--text); line-height: 1.6; margin-bottom: 12px; }
-  .vf-exp { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.5; opacity: 0; transition: opacity 0.4s; }
-  .vf-exp.show { opacity: 1; }
-  .vf-btns { display: flex; gap: 8px; }
-  .vf-btn {
-    flex: 1; padding: 9px;
-    border-radius: 8px;
-    font-size: 13px; font-weight: 500;
-    cursor: pointer; border: none;
-    transition: opacity 0.2s, transform 0.1s;
-    font-family: 'Syne', sans-serif;
-  }
-  .vf-btn.true-btn { background: rgba(39,224,122,0.18); color: var(--green); }
-  .vf-btn.false-btn { background: rgba(255,79,79,0.15); color: var(--red); }
-  .vf-btn:disabled { opacity: 0.35; cursor: default; }
-  .vf-btn.highlight-good { background: rgba(39,224,122,0.4); }
-  .vf-btn.highlight-bad { background: rgba(255,79,79,0.35); }
+/* ─── INPUT ─── */
+.input-field {
+  width: 100%; max-width: 380px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 15px 20px;
+  font-family: 'Syne', sans-serif;
+  font-size: 18px; font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 1.5rem;
+}
+.input-field::placeholder { color: var(--muted2); font-weight: 400; }
+.input-field:focus { border-color: var(--yellow); }
 
-  /* MOCKTAIL */
-  .glass-wrap { display: flex; justify-content: center; margin-bottom: 1.5rem; }
-  .glass {
-    width: 70px; height: 90px;
-    border: 2px solid rgba(255,255,255,0.25);
-    border-top: none;
-    border-radius: 0 0 18px 18px;
-    position: relative;
-    overflow: hidden;
-    background: rgba(255,255,255,0.03);
-  }
-  .glass::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: rgba(255,255,255,0.2);
-  }
-  .glass-liquid {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    background: linear-gradient(to top, rgba(0,198,255,0.7), rgba(0,198,255,0.2));
-    transition: height 0.5s cubic-bezier(0.34,1.56,0.64,1);
-  }
-  .ing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; margin-bottom: 1.5rem; }
-  .ing-btn {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 10px;
-    font-size: 13px;
-    color: var(--text);
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.18s;
-    font-family: 'Inter', sans-serif;
-    line-height: 1.3;
-  }
-  .ing-btn:hover { border-color: rgba(0,198,255,0.5); }
-  .ing-btn.picked { background: rgba(0,198,255,0.15); border-color: var(--blue); color: #A0E8FF; }
-  .tip-box {
-    width: 100%;
-    background: rgba(0,198,255,0.08);
-    border: 1px solid rgba(0,198,255,0.25);
-    border-radius: var(--radius-sm);
-    padding: 1rem 1.25rem;
-    margin-bottom: 1rem;
-  }
-  .tip-box h4 { font-size: 12px; color: var(--blue); margin-bottom: 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
-  .tip-box p { font-size: 13px; color: rgba(240,239,232,0.65); line-height: 1.6; }
+/* ─── NOTIFICATION CARD ─── */
+.notif-card {
+  width: 100%; max-width: 380px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 1.25rem;
+  margin-bottom: 2rem;
+  display: flex; gap: 14px; align-items: flex-start;
+  animation: slideIn 0.5s ease 0.3s both;
+}
+.notif-icon {
+  width: 40px; height: 40px;
+  background: var(--yellow-bg);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.notif-text p:first-child { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.notif-text p:last-child { font-size: 14px; font-weight: 500; color: var(--text); line-height: 1.5; }
 
-  /* CHALLENGE */
-  .challenge-card {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border-bright);
-    border-radius: var(--radius);
-    padding: 2rem 1.5rem;
-    text-align: center;
-    margin-bottom: 1rem;
-  }
-  .challenge-card p { font-size: 16px; line-height: 1.7; color: var(--text); }
+/* ─── STEP LIST ─── */
+.step-list { width: 100%; max-width: 380px; margin-bottom: 2.5rem; }
+.step-row {
+  display: flex; gap: 16px; align-items: flex-start;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+  animation: slideIn 0.4s ease both;
+}
+.step-row:last-child { border-bottom: none; }
+.step-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--yellow-bg);
+  border: 1px solid var(--yellow-border);
+  color: var(--yellow);
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.step-label p:first-child { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+.step-label p:last-child { font-size: 12px; color: var(--muted); }
 
-  /* RESULTS */
-  .score-display {
-    font-family: 'Syne', sans-serif;
-    font-size: 64px;
-    font-weight: 800;
-    color: var(--yellow);
-    line-height: 1;
-    margin: 0.5rem 0 0.25rem;
-  }
-  .score-label { font-size: 12px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1.5rem; }
-  .identity-card {
-    width: 100%;
-    background: var(--surface2);
-    border: 1.5px solid rgba(245,200,0,0.4);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
-  .identity-type {
-    font-family: 'Syne', sans-serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--yellow);
-    margin-bottom: 8px;
-  }
-  .identity-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
-  .breakdown {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    margin-bottom: 1.5rem;
-  }
-  .breakdown-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    font-size: 13px;
-  }
-  .breakdown-row:last-child { border-bottom: none; }
-  .breakdown-row span:first-child { color: var(--muted); }
-  .breakdown-row span:last-child { font-weight: 500; font-family: 'Syne', sans-serif; color: var(--yellow); }
+/* ─── QUIZ ─── */
+.q-meta {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px; color: var(--muted2);
+  letter-spacing: 0.08em; margin-bottom: 0.5rem;
+  text-align: center;
+}
+.q-text {
+  font-family: 'Syne', sans-serif;
+  font-size: 19px; font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.45;
+  margin-bottom: 0.5rem;
+  min-height: 58px;
+}
+.q-context {
+  font-size: 13px; color: var(--muted);
+  text-align: center; margin-bottom: 1.75rem;
+  font-style: italic; line-height: 1.6;
+}
+.opt-list { width: 100%; display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.5rem; }
+.opt-btn {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 15px 18px;
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+  line-height: 1.5;
+  transition: all 0.18s;
+  font-family: 'Inter', sans-serif;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.opt-btn:hover { border-color: var(--yellow); background: rgba(245,200,0,0.07); }
+.opt-icon {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border2);
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 700; color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+  transition: all 0.18s;
+}
+.opt-btn:hover .opt-icon { background: var(--yellow-bg); border-color: var(--yellow-border); color: var(--yellow); }
+.opt-btn.picked { border-color: var(--yellow); background: var(--yellow-bg); }
+.opt-btn.picked .opt-icon { background: var(--yellow); border-color: var(--yellow); color: var(--dark); }
 
-  /* DIVIDER */
-  .divider { width: 100%; height: 1px; background: var(--border); margin: 1.5rem 0; }
+/* ─── STAT SCREEN ─── */
+.stat-big {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(48px, 14vw, 72px);
+  font-weight: 800;
+  color: var(--yellow);
+  text-align: center;
+  line-height: 1;
+  margin: 1rem 0 0.75rem;
+  animation: countUp 0.6s ease 0.2s both;
+}
+.stat-card {
+  width: 100%; max-width: 400px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+.stat-card p { font-size: 14px; color: var(--muted); line-height: 1.75; text-align: center; }
+.stat-card strong { color: var(--text); }
+.stat-divider {
+  width: 40px; height: 3px;
+  background: var(--yellow);
+  border-radius: 3px;
+  margin: 1.25rem auto;
+}
+.source-note { font-size: 11px; color: var(--muted2); text-align: center; margin-top: 0.5rem; font-style: italic; }
 
-  /* SCREEN 0 specific */
-  .hero-eyebrow {
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 2.5rem;
-  }
-  .step-list {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    margin-bottom: 2.5rem;
-  }
-  .step-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    padding: 14px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .step-item:last-child { border-bottom: none; }
-  .step-num {
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    background: var(--yellow-dim);
-    border: 1px solid rgba(245,200,0,0.3);
-    color: var(--yellow);
-    font-family: 'Syne', sans-serif;
-    font-size: 13px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-  .step-text p:first-child { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
-  .step-text p:last-child { font-size: 12px; color: var(--muted); }
+/* ─── SCENARIO (VF repensé) ─── */
+.scenario-card {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.5rem;
+  margin-bottom: 12px;
+  transition: border-color 0.3s;
+}
+.scenario-card.resolved-good { border-color: var(--green); }
+.scenario-card.resolved-bad { border-color: var(--red); }
+.scenario-who {
+  font-size: 12px; color: var(--muted);
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.scenario-who span {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  font-size: 11px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--dark);
+}
+.scenario-situation {
+  font-size: 15px; font-weight: 500;
+  color: var(--text);
+  line-height: 1.55;
+  margin-bottom: 1rem;
+}
+.scenario-choices { display: flex; flex-direction: column; gap: 8px; }
+.choice-btn {
+  width: 100%; padding: 12px 16px;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text); font-size: 13px;
+  cursor: pointer; text-align: left; line-height: 1.5;
+  transition: all 0.18s;
+  font-family: 'Inter', sans-serif;
+}
+.choice-btn:hover:not(:disabled) { border-color: var(--yellow); background: var(--yellow-bg); }
+.choice-btn:disabled { cursor: default; }
+.choice-btn.good { background: rgba(34,224,122,0.12); border-color: var(--green); color: #7DF5AA; }
+.choice-btn.bad  { background: rgba(255,79,79,0.10); border-color: var(--red);   color: #F09595; }
+.choice-btn.neutral-dim { opacity: 0.4; }
+.scenario-reaction {
+  margin-top: 10px; padding: 10px 14px;
+  background: rgba(255,255,255,0.04);
+  border-radius: var(--r-sm);
+  font-size: 12px; color: var(--muted);
+  line-height: 1.6;
+  display: none;
+}
+.scenario-reaction.show { display: block; animation: fadeIn 0.3s ease; }
+.reaction-icon { font-size: 14px; margin-right: 6px; }
 
-  /* question indicator */
-  .q-indicator {
-    font-family: 'Syne', sans-serif;
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 0.5rem;
-    letter-spacing: 0.06em;
-  }
-  .q-text {
-    font-family: 'Syne', sans-serif;
-    font-size: 18px; font-weight: 600;
-    color: var(--text);
-    text-align: center;
-    line-height: 1.4;
-    margin-bottom: 1.75rem;
-    min-height: 56px;
-  }
+/* ─── MOCKTAIL ─── */
+.glass-scene {
+  display: flex; flex-direction: column; align-items: center;
+  margin-bottom: 1.5rem;
+}
+.glass-outer {
+  width: 80px; height: 110px;
+  position: relative;
+}
+.glass-svg { width: 100%; height: 100%; overflow: visible; }
+.glass-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 700;
+  color: var(--yellow);
+  margin-top: 12px;
+  min-height: 22px;
+  transition: opacity 0.3s;
+  text-align: center;
+}
+.ing-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px; width: 100%;
+  margin-bottom: 1.25rem;
+}
+.ing-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 12px 8px;
+  font-size: 12px; color: var(--text);
+  cursor: pointer; text-align: center;
+  transition: all 0.18s;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.35;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+}
+.ing-btn .ing-emoji { font-size: 20px; display: block; }
+.ing-btn:hover:not(:disabled) { border-color: rgba(0,198,255,0.5); }
+.ing-btn.picked { background: rgba(0,198,255,0.12); border-color: var(--blue); color: #A0E8FF; }
+.ing-btn:disabled { opacity: 0.4; cursor: default; }
+.tip-box {
+  width: 100%;
+  background: rgba(0,198,255,0.07);
+  border: 1px solid rgba(0,198,255,0.22);
+  border-radius: var(--r-sm);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  animation: fadeIn 0.4s ease;
+}
+.tip-box h4 { font-size: 11px; color: var(--blue); margin-bottom: 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+.tip-box p { font-size: 13px; color: rgba(238,238,232,0.65); line-height: 1.65; }
 
-  /* share btn */
-  .share-msg {
-    font-size: 12px;
-    color: var(--muted);
-    text-align: center;
-    margin-top: 0.75rem;
-    display: none;
-  }
+/* ─── CHALLENGE / GROUP ─── */
+.code-display {
+  font-family: 'Syne', sans-serif;
+  font-size: 32px; font-weight: 800;
+  color: var(--yellow);
+  letter-spacing: 0.18em;
+  text-align: center;
+  margin: 1rem 0;
+}
+.challenge-card {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 1.75rem 1.5rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.challenge-card p { font-size: 15px; color: var(--text); line-height: 1.7; }
+.group-hint {
+  width: 100%;
+  background: var(--yellow-bg);
+  border: 1px solid var(--yellow-border);
+  border-radius: var(--r-sm);
+  padding: 0.875rem 1rem;
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 1.5rem;
+}
+.group-hint p { font-size: 12px; color: rgba(245,200,0,0.8); line-height: 1.5; }
+
+/* ─── RESULTS ─── */
+.results-hero {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--yellow-border);
+  border-radius: var(--r);
+  padding: 2rem 1.5rem;
+  text-align: center;
+  margin-bottom: 1.25rem;
+  position: relative;
+  overflow: hidden;
+}
+.results-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(245,200,0,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.r-prenom { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.r-score-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 72px; font-weight: 800;
+  color: var(--yellow);
+  line-height: 1; margin-bottom: 4px;
+}
+.r-score-label { font-size: 12px; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.25rem; }
+.r-type {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px; font-weight: 700;
+  color: var(--yellow); margin-bottom: 8px;
+}
+.r-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
+.r-badge {
+  display: inline-block;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 700;
+  background: var(--yellow);
+  color: var(--dark);
+  border-radius: 40px;
+  padding: 5px 16px;
+  margin-bottom: 1rem;
+}
+.breakdown {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+.bd-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.bd-row:last-child { border-bottom: none; }
+.bd-row span:first-child { color: var(--muted); }
+.bd-row span:last-child { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--yellow); }
+.mocktail-result {
+  width: 100%;
+  background: rgba(0,198,255,0.07);
+  border: 1px solid rgba(0,198,255,0.2);
+  border-radius: var(--r-sm);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  text-align: center;
+}
+.mocktail-result p:first-child { font-size: 11px; color: var(--blue); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.mocktail-result p:last-child { font-size: 16px; font-family: 'Syne', sans-serif; font-weight: 700; color: var(--text); }
+
+/* ─── CANVAS CARD ─── */
+#card-canvas { display: none; }
+.share-row { display: flex; gap: 10px; width: 100%; max-width: 380px; margin-bottom: 0.75rem; }
+.share-row .btn { flex: 1; max-width: none; }
+
+/* ─── FOOTER / DIVIDER ─── */
+.spacer { height: 1.5rem; width: 100%; }
+.divider { width: 100%; height: 1px; background: var(--border); margin: 1.5rem 0; }
+.copied-msg { font-size: 12px; color: var(--green); text-align: center; height: 18px; transition: opacity 0.3s; }
 </style>
 </head>
 <body>
 <div class="app">
 
-<!-- SCREEN 0: Accueil -->
+<!-- ══════════════════════════════
+     ACTE 0 — ACCUEIL
+══════════════════════════════ -->
 <div class="screen active" id="s0">
   <div class="sam-face">
-    <div class="sam-face-inner"><div class="sam-eye"></div><div class="sam-eye"></div></div>
+    <div class="sam-eyes-row"><div class="sam-eye"></div><div class="sam-eye"></div></div>
   </div>
-  <p class="hero-eyebrow">Expérience SAM</p>
-  <h1 class="title-xl">Héros ce soir ?</h1>
-  <p class="subtitle">4 épreuves pour savoir si tu es l'héros dont ta bande a besoin. Quiz, défis, créations — la soirée te juge.</p>
+  <p style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:2rem;font-family:'Syne',sans-serif;">Expérience SAM</p>
+  <h1 class="title-hero">Une nuit<br>avec Sam</h1>
+  <p class="sub">4 épreuves. Une soirée. Découvre quel type de héros tu es pour ta bande.</p>
+
+  <div class="notif-card">
+    <div class="notif-icon">🎉</div>
+    <div class="notif-text">
+      <p>Il y a 2 min · Léa</p>
+      <p>Soirée chez moi ce soir 🍕 — T'es Sam ou pas ?</p>
+    </div>
+  </div>
+
   <div class="step-list">
-    <div class="step-item">
+    <div class="step-row" style="animation-delay:0.1s">
       <div class="step-num">1</div>
-      <div class="step-text"><p>Quiz identité</p><p>T'es quel type de Sam ?</p></div>
+      <div class="step-label"><p>Quiz identité</p><p>T'es quel type de Sam dans ton groupe ?</p></div>
     </div>
-    <div class="step-item">
+    <div class="step-row" style="animation-delay:0.2s">
       <div class="step-num">2</div>
-      <div class="step-text"><p>La vie de Sam</p><p>Vrai ou faux, t'as les bons réflexes ?</p></div>
+      <div class="step-label"><p>La stat qui claque</p><p>Un chiffre qui change la façon dont tu vois la soirée</p></div>
     </div>
-    <div class="step-item">
+    <div class="step-row" style="animation-delay:0.3s">
       <div class="step-num">3</div>
-      <div class="step-text"><p>Sam simplifie la vie</p><p>Construis ton mocktail de soirée</p></div>
+      <div class="step-label"><p>Les bons réflexes</p><p>Scénarios de soirée — tu fais quoi, vraiment ?</p></div>
     </div>
-    <div class="step-item">
+    <div class="step-row" style="animation-delay:0.4s">
       <div class="step-num">4</div>
-      <div class="step-text"><p>Sam dans la vraie vie</p><p>Le défi que tu relèves ce soir</p></div>
+      <div class="step-label"><p>Le bar de Sam</p><p>Construis ton mocktail signature</p></div>
+    </div>
+    <div class="step-row" style="animation-delay:0.5s">
+      <div class="step-num">5</div>
+      <div class="step-label"><p>Défi de groupe</p><p>Un défi à relever ce soir avec tes potes</p></div>
     </div>
   </div>
-  <button class="btn btn-yellow" onclick="goTo('s1')">Commencer l'expérience</button>
+
+  <div style="width:100%;max-width:380px;">
+    <p style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:0.75rem;">Comment tu t'appelles ?</p>
+    <input class="input-field" id="prenom-input" type="text" placeholder="Ton prénom" maxlength="20" autocomplete="off">
+    <button class="btn btn-yellow" onclick="startApp()">Entrer dans la soirée</button>
+  </div>
 </div>
 
-<!-- SCREEN 1: Quiz identité -->
+
+<!-- ══════════════════════════════
+     ACTE 1 — QUIZ IDENTITÉ
+══════════════════════════════ -->
 <div class="screen" id="s1">
-  <div class="pilier-tag">Pilier 1 — Hall of fame</div>
-  <div class="progress-track"><div class="progress-fill" id="q-fill" style="width:0%"></div></div>
-  <p class="q-indicator" id="q-num">Question 1 / 3</p>
+  <div class="tag">Acte 1 — Quiz identité</div>
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span id="q-label">Question 1 / 5</span>
+      <span id="q-pts">0 pts</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="q-fill" style="width:0%"></div></div>
+  </div>
+  <p class="q-meta" id="q-meta"></p>
   <p class="q-text" id="q-text">Chargement…</p>
+  <p class="q-context" id="q-ctx"></p>
   <div class="opt-list" id="q-opts"></div>
 </div>
 
-<!-- SCREEN 2: Vrai ou Faux -->
+
+<!-- ══════════════════════════════
+     ACTE 2 — LA STAT
+══════════════════════════════ -->
 <div class="screen" id="s2">
-  <div class="pilier-tag">Pilier 2 — La vie de Sam</div>
-  <div class="title-lg" style="margin-bottom:0.5rem;">Mission de Sam ce soir</div>
-  <p class="subtitle" style="margin-bottom:1.5rem;">Bon réflexe ou pas ? Réponds à toutes les cartes.</p>
-  <div id="vf-list" style="width:100%;"></div>
-  <button class="btn btn-yellow" id="vf-next" style="display:none;margin-top:0.5rem;" onclick="goTo('s3')">Continuer</button>
+  <div class="tag blue">Acte 2 — Le chiffre qui change tout</div>
+  <div class="sam-face sm">
+    <div class="sam-eyes-row"><div class="sam-eye"></div><div class="sam-eye"></div></div>
+  </div>
+  <p class="title-md" style="margin-bottom:0.25rem;">Ce soir en France…</p>
+  <div class="stat-big">1 sur 5</div>
+  <p style="font-size:15px;color:var(--muted);text-align:center;margin-bottom:1.5rem;line-height:1.6;">des groupes qui sortent ce soir<br><strong style="color:var(--text);">n'ont pas prévu de Sam.</strong></p>
+
+  <div class="stat-divider"></div>
+
+  <div class="stat-card">
+    <p>En 2022, <strong>30% des accidents mortels</strong> de la route impliquaient un conducteur alcoolisé. Parmi les 18-24 ans, c'est la première cause de décès sur la route.</p>
+  </div>
+  <div class="stat-card" style="margin-top:10px;">
+    <p>Pourtant <strong>85% des jeunes connaissent Sam</strong>. Le problème n'est pas la connaissance — c'est le passage à l'acte.</p>
+  </div>
+  <p class="source-note">Source : Sécurité Routière France — Observatoire National</p>
+
+  <div class="spacer"></div>
+  <p class="title-md" id="stat-perso" style="font-size:15px;line-height:1.6;color:var(--muted);"></p>
+  <div class="spacer"></div>
+  <button class="btn btn-yellow" onclick="goTo('s3')">Je comprends l'enjeu</button>
 </div>
 
-<!-- SCREEN 3: Mocktail -->
+
+<!-- ══════════════════════════════
+     ACTE 3 — LES BONS RÉFLEXES
+══════════════════════════════ -->
 <div class="screen" id="s3">
-  <div class="pilier-tag">Pilier 3 — Sam vous simplifie la vie</div>
-  <div class="title-lg" style="margin-bottom:0.5rem;">Construis ton mocktail</div>
-  <p class="subtitle" style="margin-bottom:1.25rem;">Choisis 3 ingrédients. Sam sait s'amuser sans alcool.</p>
-  <div class="glass-wrap">
-    <div class="glass"><div class="glass-liquid" id="g-liquid" style="height:0%"></div></div>
+  <div class="tag">Acte 3 — Les bons réflexes</div>
+  <p class="title-md" style="margin-bottom:0.25rem;">La soirée avance.</p>
+  <p class="sub" style="margin-bottom:1.5rem;">Chaque situation est réelle. Qu'est-ce que tu ferais, vraiment ?</p>
+  <div id="scenario-list" style="width:100%;"></div>
+  <button class="btn btn-yellow" id="sc-next" style="display:none;" onclick="goTo('s4')">Continuer</button>
+</div>
+
+
+<!-- ══════════════════════════════
+     ACTE 4 — LE BAR DE SAM
+══════════════════════════════ -->
+<div class="screen" id="s4">
+  <div class="tag blue">Acte 4 — Le bar de Sam</div>
+  <p class="title-md" style="margin-bottom:0.25rem;">Construis ton mocktail</p>
+  <p class="sub" style="margin-bottom:1.25rem;">Choisis exactement 3 ingrédients. Ton verre prend forme.</p>
+
+  <div class="glass-scene">
+    <div class="glass-outer">
+      <svg class="glass-svg" viewBox="0 0 80 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="glassClip">
+            <path d="M8 10 L14 100 Q14 106 20 106 L60 106 Q66 106 66 100 L72 10 Z"/>
+          </clipPath>
+        </defs>
+        <!-- Glass body -->
+        <path d="M8 10 L14 100 Q14 106 20 106 L60 106 Q66 106 66 100 L72 10 Z"
+              fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+        <!-- Liquid layers -->
+        <g clip-path="url(#glassClip)">
+          <rect id="liq3" x="0" y="106" width="80" height="0" fill="rgba(245,200,0,0.6)" style="transition: all 0.6s cubic-bezier(0.34,1.56,0.64,1)"/>
+          <rect id="liq2" x="0" y="106" width="80" height="0" fill="rgba(0,198,255,0.6)" style="transition: all 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.1s"/>
+          <rect id="liq1" x="0" y="106" width="80" height="0" fill="rgba(34,224,122,0.6)" style="transition: all 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.2s"/>
+        </g>
+        <!-- Shine -->
+        <path d="M16 15 L19 90" stroke="rgba(255,255,255,0.12)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="glass-name" id="glass-name">—</div>
   </div>
+
   <div class="ing-grid" id="ing-grid"></div>
+
   <div class="tip-box" id="mock-tip" style="display:none">
-    <h4>Astuce bartender</h4>
+    <h4>Accord de saveurs</h4>
     <p id="mock-tip-txt"></p>
   </div>
-  <button class="btn btn-yellow" id="mock-next" style="display:none" onclick="goTo('s4')">Parfait, on continue</button>
+  <button class="btn btn-yellow" id="mock-next" style="display:none" onclick="goTo('s5')">Ce mocktail est parfait</button>
 </div>
 
-<!-- SCREEN 4: Défi -->
-<div class="screen" id="s4">
-  <div class="pilier-tag">Pilier 4 — Sam dans la vraie vie</div>
-  <div class="title-lg" style="margin-bottom:0.5rem;">Défi de soirée</div>
-  <p class="subtitle" style="margin-bottom:1.25rem;">Un défi à relever ce soir avec tes potes. Simple. Concret. Maintenant.</p>
-  <div class="challenge-card"><p id="challenge-txt"></p></div>
-  <button class="btn btn-ghost" onclick="nextChallenge()" style="max-width:360px;margin-bottom:0.75rem;">Autre défi</button>
-  <button class="btn btn-yellow" onclick="acceptChallenge()">Je relève le défi</button>
-</div>
 
-<!-- SCREEN 5: Résultats -->
+<!-- ══════════════════════════════
+     ACTE 5 — DÉFI DE GROUPE
+══════════════════════════════ -->
 <div class="screen" id="s5">
-  <div class="sam-face" style="width:56px;height:56px;">
-    <div class="sam-face-inner"><div class="sam-eye" style="width:16px;height:16px;"></div><div class="sam-eye" style="width:16px;height:16px;"></div></div>
+  <div class="tag green">Acte 5 — Défi de groupe</div>
+  <p class="title-md" style="margin-bottom:0.25rem;">Le défi de ta soirée</p>
+  <p class="sub" style="margin-bottom:1rem;">Un défi concret à relever ce soir. Partage le code à tes potes — ils le verront aussi.</p>
+
+  <div class="group-hint">
+    <span style="font-size:18px;">👥</span>
+    <p>Code de soirée : tes potes entrent ce code sur l'appli et partagent le même défi.</p>
   </div>
-  <p class="score-label">Ton Sam Score</p>
-  <div class="score-display" id="r-score">—</div>
-  <p class="score-label" style="margin-bottom:1.5rem;">points</p>
-  <div class="identity-card">
-    <div class="identity-type" id="r-type">—</div>
-    <div class="identity-desc" id="r-desc">—</div>
-  </div>
-  <div class="breakdown" id="r-breakdown"></div>
-  <button class="btn btn-yellow" onclick="shareResult()">Partager à tes potes</button>
-  <p class="share-msg" id="share-msg">Lien copié dans le presse-papier !</p>
-  <button class="btn btn-outline" onclick="restart()">Recommencer</button>
+
+  <div class="code-display" id="group-code">—</div>
+
+  <div class="challenge-card"><p id="challenge-txt"></p></div>
+
+  <button class="btn btn-ghost" onclick="nextChallenge()">Autre défi</button>
+  <button class="btn btn-yellow" style="margin-top:0.75rem;" onclick="goTo('s6')">Je relève ce défi</button>
 </div>
 
+
+<!-- ══════════════════════════════
+     ACTE 6 — RÉSULTATS
+══════════════════════════════ -->
+<div class="screen" id="s6">
+  <div class="tag">Acte 6 — Ta carte Sam</div>
+
+  <div class="results-hero">
+    <div class="r-prenom" id="r-prenom">—</div>
+    <div class="r-score-num" id="r-score">0</div>
+    <div class="r-score-label">Sam Score</div>
+    <div class="r-badge" id="r-badge">—</div>
+    <div class="r-type" id="r-type">—</div>
+    <div class="r-desc" id="r-desc">—</div>
+  </div>
+
+  <div class="mocktail-result">
+    <p>Ton mocktail signature</p>
+    <p id="r-mocktail">—</p>
+  </div>
+
+  <div class="breakdown" id="r-breakdown"></div>
+
+  <canvas id="card-canvas" width="600" height="380"></canvas>
+
+  <div class="share-row">
+    <button class="btn btn-yellow" onclick="downloadCard()" style="font-size:13px;">Télécharger ma carte</button>
+    <button class="btn btn-ghost" onclick="copyShare()" style="font-size:13px;">Copier le lien</button>
+  </div>
+  <p class="copied-msg" id="copied-msg" style="opacity:0;">Lien copié !</p>
+  <button class="btn btn-outline" onclick="restart()">Rejouer</button>
 </div>
+
+</div><!-- /.app -->
+
 
 <script>
-const DATA = {
-  questions: [
-    {
-      q: "Personne n'a prévu de Sam pour ce soir. Qu'est-ce que tu fais ?",
-      opts: [
-        { txt: "Tu t'y colles, évidemment.", pts: 12 },
-        { txt: "Tu organises un roulement dans le groupe.", pts: 10 },
-        { txt: "Tu rentres en Uber, tant pis.", pts: 5 },
-        { txt: "Tu restes dormir sur place.", pts: 4 }
-      ]
-    },
-    {
-      q: "Tes potes te remercient d'être Sam ce soir. Ta réaction ?",
-      opts: [
-        { txt: "\"C'est mon rôle dans l'équipe.\"", pts: 12 },
-        { txt: "\"C'est rien, bonne soirée !\"", pts: 10 },
-        { txt: "\"Vous me devez une soirée.\"", pts: 5 },
-        { txt: "\"J'aurais préféré boire…\"", pts: 2 }
-      ]
-    },
-    {
-      q: "3h du mat. Ton pote veut rentrer à pied. C'est 20 min soi-disant.",
-      opts: [
-        { txt: "Tu le déposes direct.", pts: 12 },
-        { txt: "Tu lui commandes un Uber.", pts: 10 },
-        { txt: "Tu le convaincs de rester encore.", pts: 7 },
-        { txt: "Tu le laisses partir.", pts: 0 }
-      ]
-    }
-  ],
-  vfItems: [
-    { txt: "Boire de l'eau entre chaque verre ralentit vraiment l'absorption d'alcool.", ans: true, exp: "Vrai — ça dilue et ralentit le passage de l'alcool dans le sang." },
-    { txt: "Un café serré fait passer l'ivresse rapidement.", ans: false, exp: "Faux — le café stimule mais ne réduit pas le taux d'alcoolémie." },
-    { txt: "Sam peut très bien boire des bières sans alcool.", ans: true, exp: "Vrai — Sam c'est le rôle, pas l'abstinence totale." },
-    { txt: "Conduire 1h après un verre, c'est sans danger.", ans: false, exp: "Faux — selon le gabarit, l'alcool reste présent bien plus longtemps." }
-  ],
-  ingredients: [
-    { name: "Citron vert", tip: "Le citron vert apporte de l'acidité sans sucre — base de tout bon mocktail." },
-    { name: "Gingembre", tip: "Le gingembre frais donne un côté piquant qui remplace le pétillant de la bière." },
-    { name: "Sirop de mangue", tip: "La mangue apporte la chaleur festive. Parfait pour se fondre dans l'ambiance." },
-    { name: "Eau pétillante", tip: "Le pétillant, c'est 80% de la sensation d'un verre festif. Indispensable." },
-    { name: "Menthe fraîche", tip: "La menthe : fraîche, reconnaissable, et elle fait son effet visuel dans le verre." },
-    { name: "Grenadine", tip: "La grenadine pour la couleur et le côté festif. Le verre qui fait illusion." }
-  ],
-  challenges: [
-    "Désigne ton Sam pour la prochaine sortie avant la fin de la nuit. Fais-le maintenant.",
-    "Prenez une photo de groupe et remerciez votre Sam dessus. Postez-la ce soir.",
-    "Envoie un message à un pote pour lui proposer d'être son Sam ce weekend.",
-    "Trouvez ensemble le spot parfait pour finir la soirée sans prendre la voiture.",
-    "Convaincs un pote de tester un mocktail ce soir. Juste un. Le reste il fait ce qu'il veut.",
-    "Propose à quelqu'un du groupe de te remplacer comme Sam la prochaine fois."
-  ],
-  samTypes: [
-    { max: 25, type: "Sam en devenir", desc: "T'as le potentiel. Avec un peu de pratique, tu seras l'héros que ta bande mérite." },
-    { max: 45, type: "Sam occasionnel", desc: "Tu connais le rôle. T'as juste besoin de franchir le pas un peu plus souvent." },
-    { max: 62, type: "Sam confirmé", desc: "Ton groupe peut compter sur toi. C'est ça, un héros du quotidien." },
-    { max: 100, type: "Sam légendaire", desc: "Fiable, discret, indispensable. Le vrai héros ne cherche pas la lumière — il ramène tout le monde à la maison." }
-  ]
+/* ══════════════════════════════
+   DATA
+══════════════════════════════ */
+const QUIZ = [
+  {
+    q: "Personne n'a prévu de Sam pour ce soir. La soirée commence dans 2h.",
+    ctx: "Léa a organisé la soirée mais a oublié d'en parler.",
+    opts: [
+      { txt: "Tu proposes direct de te coller au rôle de Sam.", profile: "protecteur", pts: 14 },
+      { txt: "Tu lances un message groupé pour organiser un roulement.", profile: "logisticien", pts: 12 },
+      { txt: "Tu attends que quelqu'un d'autre le propose.", profile: "discret", pts: 5 },
+      { txt: "Tu rentres en Uber, c'est leur problème.", profile: "libre", pts: 3 }
+    ]
+  },
+  {
+    q: "Romain, après 4 bières, insiste pour \"juste aller chercher des pizzas\" en voiture.",
+    ctx: "Il est 23h, la pizzeria est à 10 min. Tout le monde est un peu fatigué pour réagir.",
+    opts: [
+      { txt: "Tu lui bloques le chemin et appelles Uber Eats directement.", profile: "protecteur", pts: 14 },
+      { txt: "Tu le convaincs calmement que c'est pas une bonne idée.", profile: "diplomate", pts: 12 },
+      { txt: "Tu demandes à quelqu'un de sobre de l'accompagner.", profile: "logisticien", pts: 10 },
+      { txt: "Tu le laisses partir, il sait ce qu'il fait.", profile: "libre", pts: 0 }
+    ]
+  },
+  {
+    q: "Tes potes te remercient d'être Sam ce soir. Ta réaction honnête ?",
+    ctx: "Chloé te dit : \"T'es vraiment le meilleur, merci d'être là.\"",
+    opts: [
+      { txt: "\"C'est mon rôle dans l'équipe, ça me fait plaisir.\"", profile: "protecteur", pts: 12 },
+      { txt: "\"Vous pouvez compter sur moi, comme d'hab.\"", profile: "diplomate", pts: 10 },
+      { txt: "Tu souris et tu changes de sujet.", profile: "discret", pts: 8 },
+      { txt: "\"Vous me devez une soirée !\" (rires mais c'est vrai).", profile: "libre", pts: 5 }
+    ]
+  },
+  {
+    q: "Il est 3h du mat. Chloé veut rentrer à pied — \"c'est que 25 minutes\".",
+    ctx: "Il fait nuit, elle a bu. Le quartier est calme mais pas super éclairé.",
+    opts: [
+      { txt: "Tu la raccompagnes directement, sans discussion.", profile: "protecteur", pts: 14 },
+      { txt: "Tu lui commandes un Uber et tu vérifies qu'elle monte dedans.", profile: "logisticien", pts: 12 },
+      { txt: "Tu la convaincs d'attendre que quelqu'un parte dans sa direction.", profile: "diplomate", pts: 10 },
+      { txt: "Tu lui fais confiance, elle est grande.", profile: "libre", pts: 2 }
+    ]
+  },
+  {
+    q: "La prochaine soirée approche. Personne ne parle du Sam à l'avance.",
+    ctx: "Tu es dans le groupe WhatsApp, le sujet n'a pas été abordé.",
+    opts: [
+      { txt: "Tu lances le sujet dans le groupe maintenant.", profile: "logisticien", pts: 12 },
+      { txt: "Tu appelles directement la personne la plus fiable.", profile: "protecteur", pts: 12 },
+      { txt: "T'attends le jour J, ça se règle toujours.", profile: "discret", pts: 4 },
+      { txt: "Tu proposes un roulement officiel sur le groupe.", profile: "diplomate", pts: 14 }
+    ]
+  }
+];
+
+const SCENARIOS = [
+  {
+    who: "Romain", color: "#A78BFA",
+    situation: "Romain veut reprendre sa voiture pour aller chez lui. \"J'ai juste pris 2-3 verres, ça va.\" Il cherche ses clés.",
+    choiceA: { txt: "Tu prends ses clés discrètement et tu appelles un Uber pour lui.", good: true, reaction: "Sam a intercepté la situation sans drama. Romain arrive chez lui en sécurité, et il te remerciera demain." },
+    choiceB: { txt: "Tu lui dis que c'est cool, il a l'air sobre.", good: false, reaction: "2-3 verres peuvent représenter 0.5g/L d'alcoolémie — au-dessus de la limite légale. La confiance ne remplace pas le jugement." }
+  },
+  {
+    who: "Léa", color: "#F9A8D4",
+    situation: "Léa a la nausée et veut \"prendre l'air\". Elle sort seule dehors à 2h du mat.",
+    choiceA: { txt: "Tu sors avec elle et tu restes à côté jusqu'à ce qu'elle aille mieux.", good: true, reaction: "Présent au bon moment. C'est ça, être Sam — les petits gestes qui comptent autant que les grands." },
+    choiceB: { txt: "Tu la laisses, elle a besoin d'espace.", good: false, reaction: "Quelqu'un qui a trop bu ne devrait jamais être seul dehors la nuit. L'espace peut attendre, la sécurité non." }
+  },
+  {
+    who: "Le groupe", color: "#6EE7B7",
+    situation: "Fin de soirée. Certains ont bu, d'autres moins. Il y a 4 personnes qui rentrent dans des directions différentes.",
+    choiceA: { txt: "Tu coordonnes les retours : tu déposes les plus éloignés en premier, puis les autres.", good: true, reaction: "Organisation parfaite. Tout le monde rentre. C'est pour ça que Sam est indispensable dans une bande." },
+    choiceB: { txt: "Tu déposes juste ton meilleur ami, les autres se débrouillent.", good: false, reaction: "Sam ne choisit pas qui mérite sa protection. Le rôle, c'est pour tout le groupe." }
+  }
+];
+
+const INGREDIENTS = [
+  { name: "Citron vert", emoji: "🍋", color: "rgba(163,230,53,0.7)", tip: "Acidité naturelle, zeste parfumé.", names: ["Vert", "Citrus", "Acidulé"] },
+  { name: "Gingembre", emoji: "🫚", color: "rgba(251,191,36,0.7)", tip: "Piquant et chaleureux — remplace le pétillant de la bière.", names: ["Épicé", "Ginger", "Brûlant"] },
+  { name: "Mangue", emoji: "🥭", color: "rgba(251,146,60,0.7)", tip: "Douceur tropicale, couleur festive.", names: ["Tropical", "Doré", "Doux"] },
+  { name: "Pétillant", emoji: "💧", color: "rgba(147,197,253,0.7)", tip: "La sensation festive. 80% du feeling d'un verre de soirée.", names: ["Bulles", "Pétillant", "Frais"] },
+  { name: "Menthe", emoji: "🌿", color: "rgba(52,211,153,0.7)", tip: "Fraîcheur immédiate, effet visuel dans le verre.", names: ["Frais", "Menthol", "Verde"] },
+  { name: "Grenadine", emoji: "🍒", color: "rgba(248,113,113,0.7)", tip: "La couleur de la soirée. Le verre qui fait illusion.", names: ["Rouge", "Rubis", "Sunset"] }
+];
+
+const MOCKTAIL_NAMES = {
+  "0,1,2": "Le Mango Kick", "0,1,3": "Le Ginger Spritz", "0,1,4": "Le Verde Sling",
+  "0,1,5": "Le Citrus Rouge", "0,2,3": "Le Tropical Fizz", "0,2,4": "Le Mango Verde",
+  "0,2,5": "Le Léa Sunset", "0,3,4": "Le Minuit Vert", "0,3,5": "Le Rouge Pétillant",
+  "0,4,5": "Le Jardin Rouge", "1,2,3": "Le Ginger Mango", "1,2,4": "Le Tropical Ginger",
+  "1,2,5": "Le Golden Sunset", "1,3,4": "Le Ginger Verde", "1,3,5": "Le Spicy Rouge",
+  "1,4,5": "Le Garden Spice", "2,3,4": "Le Tropical Verde", "2,3,5": "Le Mango Sunset",
+  "2,4,5": "Le Green Mango", "3,4,5": "Le Sam's Classic"
 };
 
-const state = { qScore: 0, vfScore: 0, mockScore: 0, challengeIdx: 0, vfDone: 0, pickedIngs: [] };
-let currentQ = 0;
+const CHALLENGES = [
+  "Désigne le Sam de la prochaine soirée avant la fin de la nuit. Maintenant, dans le groupe.",
+  "Prenez une photo de groupe et taguez votre Sam dessus. Postez-la ce soir.",
+  "Envoie un message à un pote pour lui proposer d'être son Sam ce weekend.",
+  "Trouvez ensemble le retour idéal pour ce soir — sans voiture, sans risque.",
+  "Convaincs quelqu'un du groupe de tester un mocktail ce soir. Un seul suffit.",
+  "Crée un sondage dans ton groupe WhatsApp : qui est Sam la prochaine fois ?"
+];
 
+const SAM_TYPES = [
+  { max: 28, type: "Sam en devenir", badge: "Niveau 1", desc: "T'as le potentiel. Avec un peu d'entraînement, tu seras l'héros que ta bande mérite." },
+  { max: 45, type: "Sam occasionnel", badge: "Niveau 2", desc: "Tu connais le rôle et tu le joues quand ça compte vraiment. Un peu plus de régularité et tu passes au niveau sup." },
+  { max: 60, type: "Sam confirmé", badge: "Niveau 3", desc: "Ton groupe peut compter sur toi. Tu anticipes, tu organises, tu protèges. C'est ça, un héros du quotidien." },
+  { max: 100, type: "Sam légendaire", badge: "Niveau MAX", desc: "Fiable, discret, indispensable. Le vrai héros ne cherche pas la lumière — il ramène tout le monde à la maison." }
+];
+
+/* ══════════════════════════════
+   STATE
+══════════════════════════════ */
+const S = {
+  prenom: "",
+  qIdx: 0,
+  qScore: 0,
+  scScore: 0,
+  mockScore: 0,
+  profileCounts: { protecteur: 0, diplomate: 0, logisticien: 0, discret: 0, libre: 0 },
+  pickedIngs: [],
+  mocktailName: "",
+  challengeIdx: 0,
+  scDone: 0
+};
+
+/* ══════════════════════════════
+   NAVIGATION
+══════════════════════════════ */
 function goTo(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const el = document.getElementById(id);
-  el.classList.add('active');
-  if (id === 's1') initQuiz();
-  if (id === 's2') initVF();
-  if (id === 's3') initMock();
-  if (id === 's4') initChallenge();
-  if (id === 's5') initResults();
+  document.getElementById(id).classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (id === 's1') initQuiz();
+  if (id === 's2') initStat();
+  if (id === 's3') initScenarios();
+  if (id === 's4') initMock();
+  if (id === 's5') initChallenge();
+  if (id === 's6') initResults();
 }
 
-/* QUIZ */
-function initQuiz() { currentQ = 0; state.qScore = 0; renderQ(); }
+/* ══════════════════════════════
+   ACTE 0 — START
+══════════════════════════════ */
+function startApp() {
+  const val = document.getElementById('prenom-input').value.trim();
+  S.prenom = val.length > 0 ? val : "Toi";
+  goTo('s1');
+}
+
+document.getElementById('prenom-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') startApp();
+});
+
+/* ══════════════════════════════
+   ACTE 1 — QUIZ
+══════════════════════════════ */
+function initQuiz() {
+  S.qIdx = 0; S.qScore = 0;
+  S.profileCounts = { protecteur: 0, diplomate: 0, logisticien: 0, discret: 0, libre: 0 };
+  renderQ();
+}
+
 function renderQ() {
-  const q = DATA.questions[currentQ];
-  const pct = Math.round((currentQ / DATA.questions.length) * 100);
+  const q = QUIZ[S.qIdx];
+  const pct = Math.round((S.qIdx / QUIZ.length) * 100);
   document.getElementById('q-fill').style.width = pct + '%';
-  document.getElementById('q-num').textContent = `Question ${currentQ + 1} / ${DATA.questions.length}`;
+  document.getElementById('q-label').textContent = 'Question ' + (S.qIdx + 1) + ' / ' + QUIZ.length;
+  document.getElementById('q-pts').textContent = S.qScore + ' pts';
   document.getElementById('q-text').textContent = q.q;
-  const c = document.getElementById('q-opts'); c.innerHTML = '';
-  q.opts.forEach((o, i) => {
+  document.getElementById('q-ctx').textContent = q.ctx;
+  const labels = ['A', 'B', 'C', 'D'];
+  const c = document.getElementById('q-opts');
+  c.innerHTML = '';
+  c.style.animation = 'slideIn 0.35s ease both';
+  setTimeout(() => { c.style.animation = ''; }, 400);
+  q.opts.forEach(function(o, i) {
     const b = document.createElement('button');
-    b.className = 'opt-btn'; b.textContent = o.txt;
-    b.onclick = () => pickOpt(i, b, o.pts);
+    b.className = 'opt-btn';
+    b.innerHTML = '<span class="opt-icon">' + labels[i] + '</span><span>' + o.txt + '</span>';
+    b.onclick = function() { pickOpt(i, b, o.pts, o.profile); };
     c.appendChild(b);
   });
 }
-function pickOpt(idx, btn, pts) {
-  document.querySelectorAll('.opt-btn').forEach(b => { b.disabled = true; b.onclick = null; });
+
+function pickOpt(idx, btn, pts, profile) {
+  document.querySelectorAll('.opt-btn').forEach(function(b) {
+    b.disabled = true;
+    b.onclick = null;
+  });
   btn.classList.add('picked');
-  state.qScore += pts;
-  setTimeout(() => {
-    currentQ++;
-    if (currentQ < DATA.questions.length) renderQ();
-    else goTo('s2');
-  }, 650);
+  S.qScore += pts;
+  if (S.profileCounts.hasOwnProperty(profile)) {
+    S.profileCounts[profile]++;
+  }
+  document.getElementById('q-pts').textContent = S.qScore + ' pts';
+  setTimeout(function() {
+    S.qIdx++;
+    if (S.qIdx < QUIZ.length) {
+      renderQ();
+    } else {
+      document.getElementById('q-fill').style.width = '100%';
+      setTimeout(function() { goTo('s2'); }, 300);
+    }
+  }, 700);
 }
 
-/* VRAI/FAUX */
-function initVF() {
-  state.vfScore = 0; state.vfDone = 0;
-  document.getElementById('vf-next').style.display = 'none';
-  const c = document.getElementById('vf-list'); c.innerHTML = '';
-  DATA.vfItems.forEach((item, i) => {
-    const d = document.createElement('div'); d.className = 'vf-card'; d.id = 'vf'+i;
-    d.innerHTML = `
-      <p class="vf-statement">${item.txt}</p>
-      <div class="vf-btns">
-        <button class="vf-btn true-btn" onclick="ansVF(${i},true)">Vrai</button>
-        <button class="vf-btn false-btn" onclick="ansVF(${i},false)">Faux</button>
-      </div>
-      <p class="vf-exp" id="vfexp${i}">${item.exp}</p>
-    `;
+/* ══════════════════════════════
+   ACTE 2 — STAT
+══════════════════════════════ */
+function initStat() {
+  const p = document.getElementById('stat-perso');
+  p.textContent = S.prenom + ', ce soir tu peux être la différence dans ta bande.';
+}
+
+/* ══════════════════════════════
+   ACTE 3 — SCÉNARIOS
+══════════════════════════════ */
+function initScenarios() {
+  S.scScore = 0; S.scDone = 0;
+  document.getElementById('sc-next').style.display = 'none';
+  const c = document.getElementById('scenario-list');
+  c.innerHTML = '';
+  SCENARIOS.forEach(function(sc, i) {
+    const d = document.createElement('div');
+    d.className = 'scenario-card';
+    d.id = 'sc' + i;
+    d.innerHTML =
+      '<div class="scenario-who"><span style="background:' + sc.color + '">' + sc.who[0] + '</span>' + sc.who + '</div>' +
+      '<p class="scenario-situation">' + sc.situation + '</p>' +
+      '<div class="scenario-choices">' +
+        '<button class="choice-btn" id="sc' + i + 'a" onclick="answerSc(' + i + ',true)">' + sc.choiceA.txt + '</button>' +
+        '<button class="choice-btn" id="sc' + i + 'b" onclick="answerSc(' + i + ',false)">' + sc.choiceB.txt + '</button>' +
+      '</div>' +
+      '<div class="scenario-reaction" id="scr' + i + '"></div>';
     c.appendChild(d);
   });
 }
-function ansVF(i, ans) {
-  const item = DATA.vfItems[i];
-  const card = document.getElementById('vf'+i);
-  const btns = card.querySelectorAll('.vf-btn');
-  btns.forEach(b => { b.disabled = true; });
-  const correct = ans === item.ans;
-  if (correct) { state.vfScore += 5; btns[ans ? 0 : 1].classList.add('highlight-good'); card.classList.add('c-true'); }
-  else { btns[ans ? 0 : 1].classList.add('highlight-bad'); card.classList.add('c-false'); }
-  document.getElementById('vfexp'+i).classList.add('show');
-  state.vfDone++;
-  if (state.vfDone >= DATA.vfItems.length) {
-    setTimeout(() => document.getElementById('vf-next').style.display = 'block', 400);
+
+function answerSc(i, isA) {
+  const sc = SCENARIOS[i];
+  const btnA = document.getElementById('sc' + i + 'a');
+  const btnB = document.getElementById('sc' + i + 'b');
+  const chosen = isA ? sc.choiceA : sc.choiceB;
+  const other  = isA ? sc.choiceB : sc.choiceA;
+  btnA.disabled = true; btnB.disabled = true;
+  if (isA) {
+    btnA.classList.add(chosen.good ? 'good' : 'bad');
+    btnB.classList.add('neutral-dim');
+  } else {
+    btnB.classList.add(chosen.good ? 'good' : 'bad');
+    btnA.classList.add('neutral-dim');
+  }
+  if (chosen.good) S.scScore += 10;
+  const card = document.getElementById('sc' + i);
+  card.classList.add(chosen.good ? 'resolved-good' : 'resolved-bad');
+  const reaction = document.getElementById('scr' + i);
+  reaction.innerHTML = (chosen.good ? '<span class="reaction-icon">✓</span>' : '<span class="reaction-icon">!</span>') + chosen.reaction;
+  reaction.classList.add('show');
+  S.scDone++;
+  if (S.scDone >= SCENARIOS.length) {
+    setTimeout(function() {
+      document.getElementById('sc-next').style.display = 'block';
+    }, 500);
   }
 }
 
-/* MOCKTAIL */
+/* ══════════════════════════════
+   ACTE 4 — MOCKTAIL
+══════════════════════════════ */
 function initMock() {
-  state.pickedIngs = []; state.mockScore = 0;
-  document.getElementById('g-liquid').style.height = '0%';
+  S.pickedIngs = []; S.mockScore = 0; S.mocktailName = '';
+  ['liq1','liq2','liq3'].forEach(function(id) {
+    var el = document.getElementById(id);
+    el.setAttribute('y', '106');
+    el.setAttribute('height', '0');
+  });
+  document.getElementById('glass-name').textContent = '—';
   document.getElementById('mock-tip').style.display = 'none';
   document.getElementById('mock-next').style.display = 'none';
-  const c = document.getElementById('ing-grid'); c.innerHTML = '';
-  DATA.ingredients.forEach((ing, i) => {
-    const b = document.createElement('button'); b.className = 'ing-btn'; b.id = 'ing'+i;
-    b.textContent = ing.name;
-    b.onclick = () => toggleIng(i, b);
+  const c = document.getElementById('ing-grid');
+  c.innerHTML = '';
+  INGREDIENTS.forEach(function(ing, i) {
+    const b = document.createElement('button');
+    b.className = 'ing-btn'; b.id = 'ing' + i;
+    b.innerHTML = '<span class="ing-emoji">' + ing.emoji + '</span>' + ing.name;
+    b.onclick = function() { toggleIng(i, b); };
     c.appendChild(b);
   });
 }
+
 function toggleIng(i, btn) {
-  const idx = state.pickedIngs.indexOf(i);
-  if (idx >= 0) { state.pickedIngs.splice(idx, 1); btn.classList.remove('picked'); }
-  else if (state.pickedIngs.length < 3) { state.pickedIngs.push(i); btn.classList.add('picked'); }
-  const pct = Math.round((state.pickedIngs.length / 3) * 100);
-  document.getElementById('g-liquid').style.height = pct + '%';
-  if (state.pickedIngs.length === 3) {
-    state.mockScore = 15;
-    const tips = state.pickedIngs.map(idx => DATA.ingredients[idx].tip).join(' ');
+  const idx = S.pickedIngs.indexOf(i);
+  if (idx >= 0) {
+    S.pickedIngs.splice(idx, 1);
+    btn.classList.remove('picked');
+    document.querySelectorAll('.ing-btn').forEach(function(b) { b.disabled = false; });
+  } else {
+    if (S.pickedIngs.length >= 3) return;
+    S.pickedIngs.push(i);
+    btn.classList.add('picked');
+  }
+  updateGlass();
+  if (S.pickedIngs.length === 3) {
+    document.querySelectorAll('.ing-btn:not(.picked)').forEach(function(b) { b.disabled = true; });
+    S.mockScore = 15;
+    const key = S.pickedIngs.slice().sort(function(a,b){return a-b;}).join(',');
+    S.mocktailName = MOCKTAIL_NAMES[key] || 'Le Sam Spécial';
+    document.getElementById('glass-name').textContent = S.mocktailName;
+    const tips = S.pickedIngs.map(function(idx) { return INGREDIENTS[idx].tip; }).join(' ');
     document.getElementById('mock-tip-txt').textContent = tips;
     document.getElementById('mock-tip').style.display = 'block';
     document.getElementById('mock-next').style.display = 'block';
   } else {
+    document.getElementById('glass-name').textContent = S.pickedIngs.length > 0 ? '...' : '—';
     document.getElementById('mock-tip').style.display = 'none';
     document.getElementById('mock-next').style.display = 'none';
   }
 }
 
-/* CHALLENGE */
+function updateGlass() {
+  const layerIds = ['liq1','liq2','liq3'];
+  const layerHeight = 28;
+  const baseY = 106;
+  for (var j = 0; j < 3; j++) {
+    const el = document.getElementById(layerIds[j]);
+    if (j < S.pickedIngs.length) {
+      const ingIdx = S.pickedIngs[j];
+      el.setAttribute('fill', INGREDIENTS[ingIdx].color);
+      const h = (j + 1) * layerHeight;
+      const y = baseY - h;
+      el.setAttribute('y', String(y));
+      el.setAttribute('height', String(h));
+    } else {
+      el.setAttribute('y', '106');
+      el.setAttribute('height', '0');
+    }
+  }
+}
+
+/* ══════════════════════════════
+   ACTE 5 — DÉFI
+══════════════════════════════ */
 function initChallenge() {
-  state.challengeIdx = Math.floor(Math.random() * DATA.challenges.length);
+  S.challengeIdx = Math.floor(Math.random() * CHALLENGES.length);
+  const code = 'SAM-' + Math.floor(1000 + Math.random() * 9000);
+  document.getElementById('group-code').textContent = code;
   renderChallenge();
 }
 function renderChallenge() {
-  document.getElementById('challenge-txt').textContent = DATA.challenges[state.challengeIdx];
+  document.getElementById('challenge-txt').textContent = CHALLENGES[S.challengeIdx];
 }
 function nextChallenge() {
-  state.challengeIdx = (state.challengeIdx + 1) % DATA.challenges.length;
+  S.challengeIdx = (S.challengeIdx + 1) % CHALLENGES.length;
   renderChallenge();
 }
-function acceptChallenge() { goTo('s5'); }
 
-/* RESULTS */
-function initResults() {
-  const total = Math.min(100, state.qScore + state.vfScore + state.mockScore + 10);
-  document.getElementById('r-score').textContent = total;
-  const type = DATA.samTypes.find(t => total <= t.max) || DATA.samTypes[DATA.samTypes.length - 1];
-  document.getElementById('r-type').textContent = type.type;
-  document.getElementById('r-desc').textContent = type.desc;
-  const bd = document.getElementById('r-breakdown'); bd.innerHTML = '';
-  [
-    ['Quiz identité', state.qScore],
-    ['Vrai ou Faux', state.vfScore],
-    ['Mocktail créé', state.mockScore],
-    ['Défi accepté', 10]
-  ].forEach(([label, val]) => {
-    bd.innerHTML += `<div class="breakdown-row"><span>${label}</span><span>${val} pts</span></div>`;
-  });
+/* ══════════════════════════════
+   ACTE 6 — RÉSULTATS
+══════════════════════════════ */
+function getDominantProfile() {
+  var best = 'protecteur'; var bestVal = -1;
+  for (var k in S.profileCounts) {
+    if (S.profileCounts[k] > bestVal) { bestVal = S.profileCounts[k]; best = k; }
+  }
+  return best;
 }
-function shareResult() {
-  const total = Math.min(100, state.qScore + state.vfScore + state.mockScore + 10);
-  const type = DATA.samTypes.find(t => total <= t.max) || DATA.samTypes[DATA.samTypes.length - 1];
-  const msg = `J'ai fait ${total} pts sur l'expérience SAM — je suis "${type.type}". Et toi ? Teste sur sam-experience.fr`;
-  if (navigator.share) { navigator.share({ text: msg }); }
-  else if (navigator.clipboard) {
-    navigator.clipboard.writeText(msg).then(() => {
-      const el = document.getElementById('share-msg');
-      el.style.display = 'block';
-      setTimeout(() => el.style.display = 'none', 3000);
+
+function initResults() {
+  const total = Math.min(100, S.qScore + S.scScore + S.mockScore + 10);
+  const typeObj = SAM_TYPES.find(function(t) { return total <= t.max; }) || SAM_TYPES[SAM_TYPES.length - 1];
+  const profile = getDominantProfile();
+  const profileLabels = { protecteur: 'Le Protecteur', diplomate: 'Le Diplomate', logisticien: 'Le Logisticien', discret: 'Le Discret', libre: 'Le Libre' };
+
+  document.getElementById('r-prenom').textContent = S.prenom;
+  document.getElementById('r-score').textContent = total;
+  document.getElementById('r-badge').textContent = typeObj.badge;
+  document.getElementById('r-type').textContent = typeObj.type + ' — ' + (profileLabels[profile] || 'Sam');
+  document.getElementById('r-desc').textContent = typeObj.desc;
+  document.getElementById('r-mocktail').textContent = S.mocktailName || 'Sam Spécial';
+
+  const bd = document.getElementById('r-breakdown');
+  bd.innerHTML = '';
+  const rows = [
+    ['Quiz identité', S.qScore + ' pts'],
+    ['Bons réflexes', S.scScore + ' pts'],
+    ['Mocktail créé', S.mockScore + ' pts'],
+    ['Défi accepté', '10 pts'],
+    ['Total', total + ' pts']
+  ];
+  rows.forEach(function(r, i) {
+    const row = document.createElement('div');
+    row.className = 'bd-row';
+    if (i === rows.length - 1) row.style.borderTop = '1px solid var(--border2)';
+    row.innerHTML = '<span>' + r[0] + '</span><span>' + r[1] + '</span>';
+    bd.appendChild(row);
+  });
+
+  generateCard(S.prenom, total, typeObj.type, S.mocktailName || 'Sam Spécial', typeObj.badge);
+}
+
+/* ══════════════════════════════
+   CANVAS CARD
+══════════════════════════════ */
+function generateCard(prenom, score, type, mocktail, badge) {
+  const canvas = document.getElementById('card-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width; const H = canvas.height;
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0C0C14';
+  ctx.fillRect(0, 0, W, H);
+
+  // Border
+  ctx.strokeStyle = 'rgba(245,200,0,0.5)';
+  ctx.lineWidth = 2;
+  ctx.roundRect(6, 6, W-12, H-12, 16);
+  ctx.stroke();
+
+  // SAM circle
+  ctx.fillStyle = '#F5C800';
+  ctx.beginPath(); ctx.arc(60, 60, 30, 0, Math.PI * 2); ctx.fill();
+  // Eyes
+  ctx.fillStyle = '#0C0C14';
+  ctx.beginPath(); ctx.arc(52, 60, 7, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(68, 60, 7, 0, Math.PI * 2); ctx.fill();
+  // Shine
+  ctx.fillStyle = '#F5C800';
+  ctx.beginPath(); ctx.arc(55, 57, 2.5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(71, 57, 2.5, 0, Math.PI * 2); ctx.fill();
+
+  // SAM label
+  ctx.fillStyle = '#F5C800';
+  ctx.font = 'bold 11px Arial';
+  ctx.fillText('SAM', 100, 48);
+  ctx.fillStyle = 'rgba(238,238,232,0.45)';
+  ctx.font = '10px Arial';
+  ctx.fillText('CARTE D\'IDENTITÉ', 100, 63);
+
+  // Prenom
+  ctx.fillStyle = '#EEEEE8';
+  ctx.font = 'bold 28px Arial';
+  ctx.fillText(prenom, 100, 92);
+
+  // Divider
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(32, 108); ctx.lineTo(W-32, 108); ctx.stroke();
+
+  // Score
+  ctx.fillStyle = '#F5C800';
+  ctx.font = 'bold 52px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(String(score), W/2, 185);
+  ctx.fillStyle = 'rgba(238,238,232,0.45)';
+  ctx.font = '11px Arial';
+  ctx.fillText('SAM SCORE', W/2, 205);
+
+  // Type
+  ctx.fillStyle = '#EEEEE8';
+  ctx.font = 'bold 18px Arial';
+  ctx.fillText(type, W/2, 240);
+
+  // Badge
+  ctx.fillStyle = '#F5C800';
+  ctx.font = 'bold 11px Arial';
+  ctx.fillText(badge, W/2, 262);
+
+  // Mocktail
+  ctx.fillStyle = 'rgba(0,198,255,0.7)';
+  ctx.font = '12px Arial';
+  ctx.fillText('Mocktail signature : ' + mocktail, W/2, 300);
+
+  // Footer
+  ctx.fillStyle = 'rgba(238,238,232,0.2)';
+  ctx.font = '10px Arial';
+  ctx.fillText('sam-experience.fr', W/2, 350);
+
+  ctx.textAlign = 'left';
+}
+
+function downloadCard() {
+  const canvas = document.getElementById('card-canvas');
+  const link = document.createElement('a');
+  link.download = 'carte-sam-' + S.prenom.toLowerCase() + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function copyShare() {
+  const total = Math.min(100, S.qScore + S.scScore + S.mockScore + 10);
+  const typeObj = SAM_TYPES.find(function(t) { return total <= t.max; }) || SAM_TYPES[SAM_TYPES.length - 1];
+  const msg = S.prenom + ' a obtenu ' + total + ' pts sur l\'expérience SAM — "' + typeObj.type + '". Et toi ?';
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(msg).then(function() {
+      const el = document.getElementById('copied-msg');
+      el.style.opacity = '1';
+      setTimeout(function() { el.style.opacity = '0'; }, 2500);
     });
   }
 }
-function restart() { goTo('s0'); }
+
+function restart() {
+  S.qIdx = 0; S.qScore = 0; S.scScore = 0; S.mockScore = 0;
+  S.profileCounts = { protecteur:0, diplomate:0, logisticien:0, discret:0, libre:0 };
+  S.pickedIngs = []; S.mocktailName = ''; S.challengeIdx = 0; S.scDone = 0;
+  document.getElementById('prenom-input').value = '';
+  goTo('s0');
+}
 </script>
 </body>
 </html>
