@@ -490,6 +490,7 @@ function detachAll(){
   if(G.phaseRef&&G.phaseOff){G.phaseRef.off('value',G.phaseOff);G.phaseOff=null;}
   if(G.playersRef&&G.playersOff){G.playersRef.off('value',G.playersOff);G.playersOff=null;}
   if(G.qDataRef&&G.qDataOff){G.qDataRef.off('value',G.qDataOff);G.qDataOff=null;}
+  if(G._scRef&&G._scOff){G._scRef.off('value',G._scOff);G._scRef=null;G._scOff=null;}
 }
 
 /* ══ ROOM ══ */
@@ -541,7 +542,8 @@ function joinRoom(){
 
 function resetScores(){
   G.qScore=0; G.scScore=0; G.mockScore=0; G.mocktailName=''; G.pickedIngs=[];
-  G.qIdx=0; G.scDone=0;
+  G.qIdx=0; G.scDone=0; G._answered=false; G._revealed=false; G._advancing=false;
+  G._lastQKey=null; G._scRef=null; G._scOff=null;
   G.prof={protecteur:0,diplomate:0,logisticien:0,discret:0,libre:0};
 }
 
@@ -617,62 +619,97 @@ function leaveRoom(){
 function enterQuiz(isHost){
   G.qIdx=0; G.qScore=0;
   G.prof={protecteur:0,diplomate:0,logisticien:0,discret:0,libre:0};
+  G._answered=false;
   show('s3');
   if(isHost){
-    renderQ(true);
+    // Host: publie q0 et démarre
+    publishQuestion(0);
   } else {
-    listenQData();
+    // Guest: le .on() de attachQListener lit l etat courant immediatement
+    attachQListener();
   }
 }
 
-/* Guest écoute qData — host écrit dans qData */
-function listenQData(){
-  if(G.qDataRef&&G.qDataOff){G.qDataRef.off('value',G.qDataOff);G.qDataOff=null;}
+/* Guest: un seul listener .on() qui lit l etat courant immediatement ET ecoute les changements.
+   Firebase .on() declenche toujours une premiere fois avec la valeur actuelle — pas besoin de .once() separe. */
+function attachQListener(){
+  if(G.qDataRef&&G.qDataOff){ G.qDataRef.off('value',G.qDataOff); G.qDataOff=null; }
+  G._lastQKey=null;
   G.qDataRef=db.ref('rooms/'+G.code+'/qData');
   G.qDataOff=G.qDataRef.on('value',function(snap){
     var data=snap.val();
     if(!data) return;
-    if(data.state==='question' && data.idx!==undefined){
+    var key=data.state+'-'+data.idx;
+    if(key===G._lastQKey) return;
+    G._lastQKey=key;
+    if(data.state==='question'){
       G.qIdx=data.idx;
-      renderQ(false);
-    } else if(data.state==='reveal'){
+      G._answered=false;
+      renderQGuest(data.idx);
+    } else if(data.state==='reveal' && data.idx===G.qIdx){
       revealQ(data.votes, data.correctIdx);
     }
   });
 }
 
-function renderQ(isHost){
+/* Host: publie une question sur Firebase et la rend localement */
+function publishQuestion(idx){
+  G.qIdx=idx;
+  G._answered=false;
+  db.ref('rooms/'+G.code+'/qVotes').remove();
+  db.ref('rooms/'+G.code+'/qData').set({state:'question', idx:idx, votes:null, correctIdx:null});
+  renderQHost(idx);
+}
+
+/* Rendu question côté HOST */
+function renderQHost(idx){
   stopTimer();
-  // Reset zone
-  document.getElementById('zone-vote').style.display='none';
-  document.getElementById('zone-vote').innerHTML='';
-  document.getElementById('btn-next-q').style.display='none';
-  document.getElementById('zone-wait-q').style.display='none';
-
-  var q=QUIZ[G.qIdx];
-  document.getElementById('q-fill').style.width=Math.round((G.qIdx/QUIZ.length)*100)+'%';
-  document.getElementById('q-label').textContent='Question '+(G.qIdx+1)+'/'+QUIZ.length;
-  document.getElementById('q-pts').textContent=G.qScore+' pts';
-  document.getElementById('q-text').textContent=q.q;
-  document.getElementById('q-ctx').textContent=q.ctx;
-
+  resetQZone();
+  var q=QUIZ[idx];
+  fillQUI(q, idx);
   var labels=['A','B','C','D'];
   var c=document.getElementById('q-opts'); c.innerHTML='';
   q.opts.forEach(function(o,i){
     var b=document.createElement('button'); b.className='opt-btn';
     b.innerHTML='<span class="opt-icon">'+labels[i]+'</span><span>'+o.t+'</span>';
-    b.id='opt-'+i;
-    b.onclick=function(){ pickOpt(i,b,o.v,o.p,isHost); };
+    b.onclick=function(){ if(!G._answered){ G._answered=true; pickOptHost(i,b,o.v,o.p); } };
     c.appendChild(b);
   });
+  startTimer(true);
+}
 
-  // Host publie la question sur Firebase
-  if(isHost){
-    db.ref('rooms/'+G.code+'/qData').set({state:'question',idx:G.qIdx,votes:null});
-    db.ref('rooms/'+G.code+'/qVotes').remove();
-  }
+/* Rendu question côté GUEST */
+function renderQGuest(idx){
+  stopTimer();
+  resetQZone();
+  G._answered=false;
+  var q=QUIZ[idx];
+  fillQUI(q, idx);
+  var labels=['A','B','C','D'];
+  var c=document.getElementById('q-opts'); c.innerHTML='';
+  q.opts.forEach(function(o,i){
+    var b=document.createElement('button'); b.className='opt-btn';
+    b.innerHTML='<span class="opt-icon">'+labels[i]+'</span><span>'+o.t+'</span>';
+    b.onclick=function(){ if(!G._answered){ G._answered=true; pickOptGuest(i,b,o.v,o.p); } };
+    c.appendChild(b);
+  });
+  startTimer(false);
+}
 
-  startTimer(isHost);
+function resetQZone(){
+  G._revealed=false;
+  document.getElementById('zone-vote').style.display='none';
+  document.getElementById('zone-vote').innerHTML='';
+  document.getElementById('btn-next-q').style.display='none';
+  document.getElementById('zone-wait-q').style.display='none';
+}
+
+function fillQUI(q, idx){
+  document.getElementById('q-fill').style.width=Math.round((idx/QUIZ.length)*100)+'%';
+  document.getElementById('q-label').textContent='Question '+(idx+1)+'/'+QUIZ.length;
+  document.getElementById('q-pts').textContent=G.qScore+' pts';
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('q-ctx').textContent=q.ctx;
 }
 
 function startTimer(isHost){
@@ -688,49 +725,64 @@ function startTimer(isHost){
     num.textContent=secs;
     if(secs<=5){ bar.style.background='#FF4F4F'; num.style.color='#FF4F4F'; }
     if(secs===0){
-      // Disable all opts
+      stopTimer();
       document.querySelectorAll('.opt-btn').forEach(function(b){b.disabled=true;b.onclick=null;});
-      if(isHost) collectAndReveal();
+      if(isHost && !G._answered){ G._answered=true; collectAndReveal(); }
+      else if(!isHost && !G._answered){
+        // Guest n'a pas répondu — envoyer vote null et attendre reveal
+        document.getElementById('zone-wait-q').style.display='block';
+      }
     }
   },1000);
 }
 
-function pickOpt(idx,btn,pts,prof,isHost){
+function pickOptHost(idx,btn,pts,prof){
   stopTimer();
   document.querySelectorAll('.opt-btn').forEach(function(b){b.disabled=true;b.onclick=null;});
   btn.classList.add('picked');
-  G.qScore+=pts; if(G.prof[prof]!==undefined) G.prof[prof]++;
+  G.qScore+=pts;
+  if(G.prof[prof]!==undefined) G.prof[prof]++;
   document.getElementById('q-pts').textContent=G.qScore+' pts';
-  // Envoyer le vote
   db.ref('rooms/'+G.code+'/qVotes/q'+G.qIdx+'/'+G.pid).set(idx);
-  if(isHost){ setTimeout(function(){ collectAndReveal(); },1500); }
-  else { document.getElementById('zone-wait-q').style.display='block'; }
+  setTimeout(function(){ collectAndReveal(); }, 1500);
+}
+
+function pickOptGuest(idx,btn,pts,prof){
+  stopTimer();
+  document.querySelectorAll('.opt-btn').forEach(function(b){b.disabled=true;b.onclick=null;});
+  btn.classList.add('picked');
+  G.qScore+=pts;
+  if(G.prof[prof]!==undefined) G.prof[prof]++;
+  document.getElementById('q-pts').textContent=G.qScore+' pts';
+  db.ref('rooms/'+G.code+'/qVotes/q'+G.qIdx+'/'+G.pid).set(idx);
+  document.getElementById('zone-wait-q').style.display='block';
 }
 
 function collectAndReveal(){
-  db.ref('rooms/'+G.code+'/qVotes/q'+G.qIdx).once('value').then(function(snap){
+  var qIdx=G.qIdx;
+  db.ref('rooms/'+G.code+'/qVotes/q'+qIdx).once('value').then(function(snap){
     var votes=snap.val()||{};
     var counts=[0,0,0,0];
     Object.values(votes).forEach(function(v){ if(counts[v]!==undefined) counts[v]++; });
-    // Meilleur score = correctIdx
     var correctIdx=0, maxV=-1;
-    QUIZ[G.qIdx].opts.forEach(function(o,i){ if(o.v>maxV){maxV=o.v;correctIdx=i;} });
-    // Publier reveal
-    db.ref('rooms/'+G.code+'/qData').set({state:'reveal',idx:G.qIdx,votes:counts,correctIdx:correctIdx});
+    QUIZ[qIdx].opts.forEach(function(o,i){ if(o.v>maxV){maxV=o.v;correctIdx=i;} });
+    db.ref('rooms/'+G.code+'/qData').set({state:'reveal',idx:qIdx,votes:counts,correctIdx:correctIdx});
+    revealQ(counts, correctIdx);
   });
 }
 
 function revealQ(votes,correctIdx){
+  if(G._revealed) return;
+  G._revealed=true;
   stopTimer();
   document.getElementById('zone-wait-q').style.display='none';
-  // Colorier les boutons
-  document.querySelectorAll('.opt-btn').forEach(function(b,i){
+  var opts=document.getElementById('q-opts').querySelectorAll('.opt-btn');
+  opts.forEach(function(b,i){
     b.disabled=true; b.onclick=null;
     if(i===correctIdx) b.classList.add('reveal-good');
     else if(b.classList.contains('picked')) b.classList.add('reveal-bad');
     else b.classList.add('reveal-dim');
   });
-  // Afficher votes
   var total=(votes.reduce(function(a,b){return a+b;},0))||1;
   var panel=document.getElementById('zone-vote');
   panel.innerHTML=''; panel.style.display='block';
@@ -738,7 +790,7 @@ function revealQ(votes,correctIdx){
   div.innerHTML='<h4>Comment le groupe a voté</h4>';
   votes.forEach(function(v,i){
     var pct=Math.round(v/total*100);
-    var good=i===correctIdx;
+    var good=(i===correctIdx);
     var row=document.createElement('div'); row.className='vote-row';
     row.innerHTML='<span class="vote-lbl">'+['A','B','C','D'][i]+'</span>'+
       '<div class="vote-bar-wrap"><div class="vote-bar" id="vb'+i+'" style="background:'+(good?'rgba(18,204,188,0.6)':'rgba(255,255,255,0.15)')+'"><span style="color:'+(good?'#7FFFF4':'rgba(240,240,240,0.6)')+'">'+v+' vote'+(v>1?'s':'')+'</span></div></div>'+
@@ -750,12 +802,10 @@ function revealQ(votes,correctIdx){
     votes.forEach(function(v,i){
       var pct=Math.round(v/total*100);
       var el=document.getElementById('vb'+i);
-      if(el){ el.style.transition='width 0.8s cubic-bezier(0.4,0,0.2,1)'; el.style.width=pct+'%'; }
+      if(el){el.style.transition='width 0.8s cubic-bezier(0.4,0,0.2,1)';el.style.width=pct+'%';}
     });
   },80);
-  // Sauver score
   db.ref('rooms/'+G.code+'/players/'+G.pid).update({score:G.qScore});
-  // Host: bouton next / Guest: attente
   if(G.isHost) document.getElementById('btn-next-q').style.display='block';
   else document.getElementById('zone-wait-q').style.display='block';
 }
@@ -766,9 +816,7 @@ function hostNextQ(){
     db.ref('rooms/'+G.code).update({phase:'lb1'});
     enterLeaderboard('lb1');
   } else {
-    G.qIdx=next;
-    db.ref('rooms/'+G.code+'/qVotes').remove();
-    renderQ(true);
+    publishQuestion(next);
   }
 }
 
@@ -806,11 +854,13 @@ function renderLb(elId,arr){
 
 /* ══ HOST ADVANCE ══ */
 function hostAdvancePhase(){
+  if(G._advancing) return;
+  G._advancing=true;
   db.ref('rooms/'+G.code+'/phase').once('value').then(function(snap){
     var cur=snap.val();
     var next={lb1:'stat',stat:'scenarios',scenarios:'lb2',lb2:'mocktail',mocktail:'results'}[cur]||'results';
     db.ref('rooms/'+G.code).update({phase:next});
-    // Host aussi avance
+    G._advancing=false;
     onPhaseChange(next);
   });
 }
@@ -1038,8 +1088,8 @@ function copyShare(){
 }
 
 function doRestart(){
+  G._advancing=false;
   detachAll();
-  if(G._scRef&&G._scOff){G._scRef.off('value',G._scOff);}
   db.ref('rooms/'+G.code).remove();
   document.getElementById('inp-prenom').value='';
   document.getElementById('inp-code').value='';
