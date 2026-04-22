@@ -248,10 +248,9 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
   <div class="step-list">
     <div class="step-row" style="animation-delay:0.1s"><div class="step-num">1</div><div class="step-label"><p>Quiz identité</p><p>T'es quel type de Sam dans ton groupe ?</p></div></div>
     <div class="step-row" style="animation-delay:0.17s"><div class="step-num">2</div><div class="step-label"><p>Sam au volant</p><p>Évite les obstacles, collecte les mocktails</p></div></div>
-    <div class="step-row" style="animation-delay:0.24s"><div class="step-num">3</div><div class="step-label"><p>La stat qui change tout</p><p>Un chiffre qui redéfinit la soirée</p></div></div>
-    <div class="step-row" style="animation-delay:0.31s"><div class="step-num">4</div><div class="step-label"><p>La soirée en images</p><p>4 situations — qu'est-ce que tu fais vraiment ?</p></div></div>
-    <div class="step-row" style="animation-delay:0.38s"><div class="step-num">5</div><div class="step-label"><p>Le bar de Sam</p><p>10 ingrédients, 4 doses, tes combos font le score</p></div></div>
-    <div class="step-row" style="animation-delay:0.45s"><div class="step-num">6</div><div class="step-label"><p>Ta carte Sam</p><p>Score, profil, mocktail signature</p></div></div>
+    <div class="step-row" style="animation-delay:0.24s"><div class="step-num">3</div><div class="step-label"><p>La soirée en images</p><p>4 situations — qu'est-ce que tu fais vraiment ?</p></div></div>
+    <div class="step-row" style="animation-delay:0.31s"><div class="step-num">4</div><div class="step-label"><p>Le bar de Sam</p><p>10 ingrédients, 4 doses, tes combos font le score</p></div></div>
+    <div class="step-row" style="animation-delay:0.38s"><div class="step-num">5</div><div class="step-label"><p>Ta carte Sam</p><p>Score, profil, mocktail signature</p></div></div>
   </div>
   <div style="width:100%;max-width:400px;animation:fadeUp 0.5s ease 0.5s both;">
     <p style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:0.75rem;">Ton prénom pour commencer</p>
@@ -317,35 +316,19 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
     <button class="btn btn-g" onclick="restartDriveGame()">Rejouer</button>
   </div>
 </div>
-<!-- S3: STAT -->
-<div class="screen" id="s3">
-  <div class="tag tc">Acte 2 — Le chiffre qui change tout</div>
-  <p style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;text-transform:uppercase;text-align:center;margin-bottom:0.25rem;animation:fadeUp 0.4s ease both;">Ce soir en France…</p>
-  <div class="stat-big">1 sur 5</div>
-  <p style="font-size:15px;color:var(--muted);text-align:center;margin-bottom:1.5rem;line-height:1.65;animation:fadeUp 0.4s ease 0.3s both;">des groupes qui sortent ce soir<br><strong style="color:var(--text);">n'ont pas prévu de Sam.</strong></p>
-  <div class="stat-bar"></div>
-  <div class="stat-card" style="animation-delay:0.1s"><p>En 2022, <strong>30% des accidents mortels</strong> impliquaient un conducteur alcoolisé. Chez les 18-24 ans, c'est la <strong>première cause de décès</strong> sur la route.</p></div>
-  <div class="stat-card" style="animation-delay:0.2s;margin-top:10px;"><p>Pourtant <strong>85% des jeunes connaissent Sam.</strong> Le problème n'est pas la connaissance — c'est le passage à l'acte.</p></div>
-  <p class="source">Source : Sécurité Routière France — Observatoire National</p>
-  <div class="spacer"></div>
-  <p id="stat-perso" style="font-size:15px;line-height:1.65;color:var(--muted);text-align:center;max-width:360px;animation:fadeUp 0.4s ease 0.4s both;"></p>
-  <div class="spacer"></div>
-  <button class="btn btn-y" onclick="transition('s4','Acte 3','La soirée en images')">Je comprends l'enjeu →</button>
-</div>
-
 <!-- S3: SITUATIONS -->
-<div class="screen" id="s4">
+<div class="screen" id="s3">
   <div class="tag tm">Acte 3 — La soirée en images</div>
   <p style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;text-align:center;margin-bottom:0.25rem;">Qu'est-ce que tu fais ?</p>
   <p class="sub" style="margin-bottom:1.25rem;">4 situations réelles. Aucune bonne réponse évidente.</p>
   <div class="sit-progress" id="sit-progress"></div>
   <div id="sit-card-area" style="width:100%;max-width:400px;"></div>
   <div id="sit-summary-area" style="width:100%;display:none;"></div>
-  <button class="btn btn-y" id="btn-sit-next" style="display:none;" onclick="transition('s5','Acte 4','Le bar de Sam')">Continuer →</button>
+  <button class="btn btn-y" id="btn-sit-next" style="display:none;" onclick="transition('s4','Acte 4','Le bar de Sam')">Continuer →</button>
 </div>
 
 <!-- S4: BAR DE SAM V2 -->
-<div class="screen" id="s5">
+<div class="screen" id="s4">
   <div class="tag tc">Acte 4 — Le bar de Sam</div>
   <p style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;text-align:center;margin-bottom:0.25rem;">Construis ton mocktail</p>
   <p class="sub" style="margin-bottom:1rem;">Choisis 4 ingrédients, dose chacun. Les bons combos font la différence.</p>
@@ -392,11 +375,11 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
   <div class="tip-box" id="bar-tip" style="display:none;"><h4>Accord de saveurs</h4><p id="bar-tip-txt"></p></div>
 
   <!-- Bouton continuer -->
-  <button class="btn btn-y" id="btn-bar-next" style="display:none;" onclick="transition('s6','Acte 5','Ta carte Sam')">Ce mocktail est parfait →</button>
+  <button class="btn btn-y" id="btn-bar-next" style="display:none;" onclick="transition('s5','Acte 5','Ta carte Sam')">Ce mocktail est parfait →</button>
 </div>
 
 <!-- S5: RÉSULTATS -->
-<div class="screen" id="s6">
+<div class="screen" id="s5">
   <div class="results-bg"></div>
   <div class="tag tv" style="animation:fadeUp 0.4s ease both;">Acte 5 — Ta carte Sam</div>
   <div class="res-card">
@@ -421,13 +404,38 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 
 <script>
 /* ══ DATA QUIZ ══ */
-var QUIZ=[
+/* Banque de 15 questions — 5 tirées aléatoirement à chaque session */
+var QUIZ_BANK=[
+  /* ── Série classique ── */
   {q:"Personne n'a prévu de Sam. La soirée commence dans 2h.",ctx:"Léa a organisé la soirée mais a oublié d'en parler.",opts:[{t:"Tu proposes direct de t'y coller.",p:"protecteur",v:14},{t:"Tu lances un message pour organiser un roulement.",p:"logisticien",v:12},{t:"Tu attends que quelqu'un d'autre propose.",p:"discret",v:5},{t:"Tu rentres en Uber, c'est leur problème.",p:"libre",v:3}]},
   {q:"Romain, après 4 bières, veut aller chercher des pizzas en voiture.",ctx:"Il est 23h. La pizzeria est à 10 min. Personne ne réagit.",opts:[{t:"Tu lui bloques le chemin et commandes Uber Eats.",p:"protecteur",v:14},{t:"Tu le convaincs calmement de ne pas conduire.",p:"diplomate",v:12},{t:"Tu demandes à quelqu'un de sobre de l'accompagner.",p:"logisticien",v:10},{t:"Tu le laisses partir, il sait ce qu'il fait.",p:"libre",v:0}]},
   {q:"Tes potes te remercient d'être Sam. Ta réaction honnête ?",ctx:"Chloé te dit : \"T'es vraiment le meilleur, merci.\"",opts:[{t:"\"C'est mon rôle dans l'équipe, ça me fait plaisir.\"",p:"protecteur",v:12},{t:"\"Vous pouvez toujours compter sur moi.\"",p:"diplomate",v:10},{t:"Tu souris et tu changes de sujet.",p:"discret",v:8},{t:"\"Vous me devez une soirée !\"",p:"libre",v:5}]},
   {q:"3h du mat. Chloé veut rentrer à pied — \"c'est que 25 minutes\".",ctx:"Il fait nuit, elle a bu. Quartier calme mais peu éclairé.",opts:[{t:"Tu la raccompagnes directement.",p:"protecteur",v:14},{t:"Tu lui commandes un Uber et vérifies qu'elle monte.",p:"logisticien",v:12},{t:"Tu la convaincs d'attendre quelqu'un dans sa direction.",p:"diplomate",v:10},{t:"Tu lui fais confiance, elle est grande.",p:"libre",v:2}]},
-  {q:"Prochaine soirée — personne ne parle du Sam à l'avance.",ctx:"Tu es dans le groupe WhatsApp. Le sujet n'a pas été abordé.",opts:[{t:"Tu proposes un roulement officiel dans le groupe.",p:"diplomate",v:14},{t:"Tu lances le sujet maintenant.",p:"logisticien",v:12},{t:"Tu appelles directement la personne la plus fiable.",p:"protecteur",v:12},{t:"T'attends le jour J, ça se règle toujours.",p:"discret",v:4}]}
+  {q:"Prochaine soirée — personne ne parle du Sam à l'avance.",ctx:"Tu es dans le groupe WhatsApp. Le sujet n'a pas été abordé.",opts:[{t:"Tu proposes un roulement officiel dans le groupe.",p:"diplomate",v:14},{t:"Tu lances le sujet maintenant.",p:"logisticien",v:12},{t:"Tu appelles directement la personne la plus fiable.",p:"protecteur",v:12},{t:"T'attends le jour J, ça se règle toujours.",p:"discret",v:4}]},
+  /* ── Série humoristique ── */
+  {q:"Il est minuit. Kevin dit qu'il \"conduit mieux après quelques verres\".",ctx:"Kevin dit ça à chaque soirée. Il y croit vraiment.",opts:[{t:"Tu lui confisques ses clés et lui expliques que non.",p:"protecteur",v:14},{t:"Tu lui montres les stats sur ton téléphone.",p:"diplomate",v:12},{t:"Tu lui commandes un Uber sans lui demander son avis.",p:"logisticien",v:11},{t:"Tu hochs la tête poliment. Kevin va bien s'en sortir.",p:"libre",v:0}]},
+  {q:"Léa te propose de te \"juste goûter\" son cocktail signature en tant que Sam.",ctx:"Elle insiste. Il est juste devant toi. Il sent bon.",opts:[{t:"Tu déclines avec le sourire — Sam ne goûte pas.",p:"protecteur",v:14},{t:"Tu prends un mocktail à la place et tu fais le même bruit.",p:"diplomate",v:12},{t:"Tu goûtes une micro-gorgée et tu fais semblant de tomber.",p:"discret",v:6},{t:"Tu commandes directement un deuxième pour Léa.",p:"logisticien",v:8}]},
+  {q:"Il est 1h du mat. Quelqu'un dans le groupe propose de \"juste aller voir\" un autre endroit.",ctx:"L'autre endroit est à 20 km. Tout le monde a bu.",opts:[{t:"Tu joues le jeu mais en Uber — tu coordonnes les places.",p:"logisticien",v:13},{t:"Tu proposes de continuer là où vous êtes.",p:"diplomate",v:12},{t:"Tu organises un vote démocratique. Sam respecte la démocratie.",p:"discret",v:9},{t:"Tu demandes à Google Maps combien ça fait à pied.",p:"libre",v:3}]},
+  {q:"Ton meilleur ami veut \"juste déplacer la voiture\" de 10 mètres en sortant du bar.",ctx:"Il a bu. C'est une rue piétonne de toute façon. Peut-être.",opts:[{t:"Non. Tu prends les clés et tu déplaces la voiture toi-même.",p:"protecteur",v:14},{t:"Tu lui rappelles que même 10 mètres c'est conduire en état d'ivresse.",p:"diplomate",v:12},{t:"Tu lui dis que la voiture est très bien là où elle est.",p:"logisticien",v:10},{t:"Tu filmes au cas où. Pour rire. Mais tu l'en empêches.",p:"discret",v:7}]},
+  {q:"Il est 2h du mat. Tom a décidé qu'il \"dormira dans sa voiture\" plutôt que de rentrer.",ctx:"Tom est à Paris. Sa voiture est garée à Vincennes. Il ne sait pas très bien pourquoi.",opts:[{t:"Tu lui proposes de dormir sur ton canapé.",p:"protecteur",v:14},{t:"Tu lui appelles un Uber — destination : son vrai lit.",p:"logisticien",v:13},{t:"Tu lui poses des questions pour voir s'il s'en sort seul.",p:"diplomate",v:9},{t:"Tu prends une photo de lui pour lui montrer demain.",p:"libre",v:4}]},
+  {q:"Quelqu'un propose de \"couper par l'autoroute\" pour gagner du temps sur le chemin du retour.",ctx:"Il est 4h. Le conducteur a bu. L'autoroute \"c'est plus sûr car moins de feux\".",opts:[{t:"Tu refuses catégoriquement et tu cherches un chauffeur sobre.",p:"protecteur",v:14},{t:"Tu appelles un VTC — tu expliques la situation clairement.",p:"logisticien",v:13},{t:"Tu proposes à quelqu'un de sobre de conduire à la place.",p:"diplomate",v:12},{t:"Tu votes pour rester dormir sur place.",p:"discret",v:10}]},
+  {q:"Le groupe WhatsApp s'appelle \"Soirée legendary 🔥\". Il n'y a pas encore de Sam.",ctx:"Il y a 12 messages en 3 minutes. Personne n'aborde le sujet.",opts:[{t:"Tu envoies : \"Qui est Sam ce soir ? Je pose la question maintenant.\"",p:"logisticien",v:14},{t:"Tu te proposes directement.",p:"protecteur",v:13},{t:"Tu fais un sondage rapide dans le groupe.",p:"diplomate",v:11},{t:"Tu attends de voir si quelqu'un se dévoue.",p:"discret",v:4}]},
+  {q:"À la soirée, quelqu'un sort son app Waze et annonce que \"techniquement\" il est en dessous de 0.5.",ctx:"Son \"calcul\" est basé sur les bières qu'il n'a pas finies.",opts:[{t:"Tu lui confisques les clés. On ne négocie pas avec Waze.",p:"protecteur",v:14},{t:"Tu lui expliques que Waze calcule les embouteillages, pas l'alcool.",p:"diplomate",v:12},{t:"Tu lui montres un vrai éthylotest sur l'app Alcootest.",p:"logisticien",v:11},{t:"Tu appelles un Uber pour lui sans rien dire.",p:"discret",v:10}]},
+  {q:"Quelqu'un propose que \"tout le monde prend juste un verre de vin chez le traiteur sur le chemin\".",ctx:"Il est minuit. Le \"chemin\" c'est chez le traiteur d'abord, voiture ensuite.",opts:[{t:"Tu rappelles qu'on ne s'arrête pas au traiteur AVANT de conduire.",p:"protecteur",v:14},{t:"Tu proposes le traiteur APRÈS être arrivés — en Uber.",p:"logisticien",v:13},{t:"Tu votes pour livraison directement à la soirée.",p:"diplomate",v:11},{t:"Tu commandes pour tout le monde depuis l'app. Problème résolu.",p:"discret",v:9}]}
 ];
+
+/* Tirage de 5 questions aléatoires sans remise */
+var QUIZ=[];
+function pickQuiz(){
+  var bank=QUIZ_BANK.slice();
+  var picked=[];
+  while(picked.length<5&&bank.length>0){
+    var idx=Math.floor(Math.random()*bank.length);
+    picked.push(bank.splice(idx,1)[0]);
+  }
+  QUIZ=picked;
+}
+pickQuiz();
 
 /* ══ DATA SITUATIONS ══ */
 var SITUATIONS=[
@@ -540,10 +548,10 @@ function showScreen(id){
   window.scrollTo({top:0,behavior:'smooth'});
   if(id==='s1')initQuiz();
   if(id==='s2')initDriveScreen();
-  if(id==='s3')initStat();
-  if(id==='s4')initSituations();
-  if(id==='s5')initBar();
-  if(id==='s6')initResults();
+  if(id==='s3')initSituations();
+  if(id==='s3')initSituations();
+  if(id==='s4')initBar();
+  if(id==='s5')initResults();
 }
 
 /* ══ START ══ */
@@ -557,7 +565,7 @@ function startApp(){
 document.getElementById('inp-prenom').addEventListener('keydown',function(e){if(e.key==='Enter')startApp();});
 
 /* ══ QUIZ ══ */
-function initQuiz(){S.qIdx=0;S.qScore=0;S.prof={protecteur:0,diplomate:0,logisticien:0,discret:0,libre:0};renderQ();}
+function initQuiz(){S.qIdx=0;S.qScore=0;S.prof={protecteur:0,diplomate:0,logisticien:0,discret:0,libre:0};pickQuiz();renderQ();}
 function renderQ(){
   stopTimer();
   var q=QUIZ[S.qIdx];
@@ -760,8 +768,7 @@ function driveGameOver(){
   document.getElementById('drive-over').style.display='flex';
 }
 
-/* ══ STAT ══ */
-function initStat(){document.getElementById('stat-perso').textContent=S.prenom+', ce soir tu peux être la différence dans ta bande.';}
+
 
 /* ══ SITUATIONS ══ */
 function initSituations(){S.sitIdx=0;S.sitScore=0;S.sitAnswers=[];renderSitPips();renderSitCard();document.getElementById('sit-summary-area').style.display='none';document.getElementById('btn-sit-next').style.display='none';}
@@ -997,7 +1004,7 @@ function launchConfetti(){for(var i=0;i<80;i++){(function(d){setTimeout(function
 function genCard(prenom,score,type,mocktail,badge){var cv=document.getElementById('card-canvas'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height;ctx.clearRect(0,0,W,H);ctx.fillStyle='#07070F';ctx.fillRect(0,0,W,H);var grd=ctx.createLinearGradient(0,0,W,0);grd.addColorStop(0,'#FA26FA');grd.addColorStop(0.33,'#FFCF00');grd.addColorStop(0.66,'#00B0FF');grd.addColorStop(1,'#12CCBD');ctx.strokeStyle=grd;ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(5,5,W-10,H-10,14);ctx.stroke();ctx.fillStyle='#FFCF00';ctx.fillRect(5,5,W-10,56);ctx.fillStyle='#000';ctx.font='bold 36px Arial';ctx.textAlign='left';ctx.fillText('SAM',22,44);ctx.font='11px Arial';ctx.fillText("CARTE D'IDENTITÉ",88,28);ctx.font='bold 14px Arial';ctx.fillText(prenom.toUpperCase(),88,48);var sg=ctx.createLinearGradient(W/2-80,100,W/2+80,200);sg.addColorStop(0,'#FFCF00');sg.addColorStop(1,'#00B0FF');ctx.fillStyle=sg;ctx.font='bold 88px Arial';ctx.textAlign='center';ctx.fillText(String(score),W/2,185);ctx.fillStyle='rgba(242,242,240,0.4)';ctx.font='12px Arial';ctx.fillText('SAM SCORE',W/2,206);ctx.fillStyle='#FFCF00';ctx.font='bold 24px Arial';ctx.fillText(type.toUpperCase(),W/2,248);ctx.fillStyle='rgba(255,207,0,0.6)';ctx.font='bold 12px Arial';ctx.fillText(badge,W/2,272);ctx.fillStyle='#00B0FF';ctx.font='bold 14px Arial';ctx.fillText('Mocktail : '+mocktail,W/2,312);ctx.fillStyle='rgba(242,242,240,0.18)';ctx.font='10px Arial';ctx.fillText('sam-experience.fr',W/2,358);ctx.textAlign='left';}
 function dlCard(){var l=document.createElement('a');l.download='carte-sam-'+S.prenom.toLowerCase()+'.png';l.href=document.getElementById('card-canvas').toDataURL('image/png');l.click();}
 function copyShare(){var total=S.qScore+S.sitScore+S.mockScore;var t=SAM_TYPES.find(function(x){return total<=x.max;})||SAM_TYPES[SAM_TYPES.length-1];var msg=S.prenom+' — '+total+' pts "'+t.type+'". Et toi ? sam-experience.fr';if(navigator.clipboard){navigator.clipboard.writeText(msg).then(function(){var el=document.getElementById('copied');el.textContent='Lien copié !';el.style.opacity='1';setTimeout(function(){el.style.opacity='0';},2500);});}}
-function restart(){S.qScore=0;S.sitScore=0;S.mockScore=0;S.driveScore=0;S.qIdx=0;S.sitIdx=0;S.sitAnswers=[];S.selIngs=[];S.mocktailName='';S.mockBonusScore=0;S.mockBaseScore=0;S.prof={protecteur:0,diplomate:0,logisticien:0,discret:0,libre:0};document.getElementById('inp-prenom').value='';document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById('s0').classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+function restart(){S.qScore=0;S.sitScore=0;S.mockScore=0;S.driveScore=0;S.qIdx=0;pickQuiz();S.sitIdx=0;S.sitAnswers=[];S.selIngs=[];S.mocktailName='';S.mockBonusScore=0;S.mockBaseScore=0;S.prof={protecteur:0,diplomate:0,logisticien:0,discret:0,libre:0};document.getElementById('inp-prenom').value='';document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById('s0').classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
 </script>
 </body>
 </html>
