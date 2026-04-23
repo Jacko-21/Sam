@@ -283,6 +283,33 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
   70%{transform:scale(0.95);}
   100%{opacity:1;transform:scale(1);}
 }
+
+/* Score running */
+.score-hud{
+  position:fixed;top:0;left:0;right:0;z-index:150;
+  display:none;
+  justify-content:center;
+  padding:8px 16px env(safe-area-inset-top,0px);
+  background:rgba(7,7,15,0.85);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.score-hud.visible{display:flex;}
+.score-hud-inner{
+  display:flex;align-items:center;gap:16px;
+  width:100%;max-width:520px;
+}
+.score-hud-prenom{
+  font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;
+  color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;
+}
+.score-hud-pts{
+  font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;
+  color:var(--y);margin-left:auto;
+  transition:transform 0.2s;
+}
+.score-hud-pts.bump{transform:scale(1.3);}
+
 </style>
 </head>
 <body>
@@ -295,6 +322,17 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 <div id="score-flash" class="score-flash"></div>
 <div class="app">
 
+<!-- HUD SCORE RUNNING -->
+<div class="score-hud" id="score-hud">
+  <div class="score-hud-inner">
+    <div class="score-hud-prenom" id="hud-prenom"></div>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--y);animation:pulse 2s ease infinite;"></div>
+    </div>
+    <div class="score-hud-pts" id="hud-pts">0 pts</div>
+  </div>
+</div>
+
 <!-- S0: ACCUEIL -->
 <div class="screen active" id="s0">
   <div class="sam-bandeau-wrap" style="animation:fadeUp 0.5s ease both;">
@@ -304,7 +342,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
     </div>
   </div>
   <h1 class="hero-title"><span><em>Une nuit</em></span><span><em>avec Sam</em></span></h1>
-  <p class="sub" style="animation:fadeUp 0.5s ease 0.3s both;">5 épreuves. Une soirée. Découvre quel héros tu es pour ta bande.</p>
+  <p class="sub" style="animation:fadeUp 0.5s ease 0.3s both;font-size:16px;">Être Sam, c'est pas une contrainte.<br><strong style="color:var(--text);">C'est le rôle le plus important de la soirée.</strong></p>
   <div class="notif-card"><div class="notif-dot"></div><div><p style="font-size:12px;color:var(--muted);margin-bottom:4px;">Il y a 2 min · Léa</p><p style="font-size:14px;font-weight:500;line-height:1.5;">Soirée chez moi ce soir 🎉 — T'es Sam ou pas ?</p></div></div>
   <div class="step-list">
     <div class="step-row" style="animation-delay:0.1s"><div class="step-num">1</div><div class="step-label"><p>Quiz identité</p><p>T'es quel type de Sam dans ton groupe ?</p></div></div>
@@ -337,6 +375,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
   <p class="q-text" id="q-text"></p>
   <p class="q-ctx" id="q-ctx"></p>
   <div class="opt-list" id="q-opts"></div>
+  <div id="quiz-stat-box" style="display:none;width:100%;max-width:400px;background:rgba(18,204,188,0.08);border:1px solid rgba(18,204,188,0.3);border-radius:var(--rsm);padding:12px 16px;font-size:13px;color:rgba(18,204,188,0.9);line-height:1.6;margin-top:0.5rem;font-style:italic;"></div>
 </div>
 
 
@@ -482,12 +521,13 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
     <div class="r-badge" id="r-badge"></div>
     <div class="r-type" id="r-type"></div>
     <div class="r-desc" id="r-desc"></div>
+      <div id="r-tagline" style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--c);margin-top:10px;letter-spacing:0.04em;"></div>
   </div>
   <div class="mock-res" style="animation:fadeUp 0.4s ease 0.2s both;"><p>Ton mocktail signature</p><p id="r-mocktail"></p></div>
   <div class="breakdown" id="breakdown" style="animation:fadeUp 0.4s ease 0.3s both;"></div>
-  <canvas id="card-canvas" width="600" height="380"></canvas>
+  <canvas id="card-canvas" width="1080" height="1920" style="display:none;"></canvas>
   <div class="share-row" style="animation:fadeUp 0.4s ease 0.4s both;">
-    <button class="btn btn-y" onclick="dlCard()" style="font-size:14px;">Ma carte</button>
+    <button class="btn btn-y" onclick="dlCard()" style="font-size:14px;">📱 Story Instagram</button>
     <button class="btn btn-g" onclick="copyShare()" style="font-size:14px;">Copier</button>
   </div>
   <p class="copied" id="copied" style="opacity:0;margin-bottom:0.5rem;"></p>
@@ -503,6 +543,30 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 <script>
 /* ══ DATA QUIZ ══ */
 /* Banque de 15 questions — 5 tirées aléatoirement à chaque session */
+
+/* Stats pédagogiques associées à chaque thème */
+var QUIZ_STATS = {
+  'alcool_volant': "30% des accidents mortels en France impliquent un conducteur alcoolisé.",
+  'pression_sociale': "85% des jeunes connaissent Sam — mais seulement 1 soirée sur 5 a un Sam désigné à l'avance.",
+  'reconnaissance': "Les groupes qui désignent un Sam vivent leurs soirées plus sereinement selon les études ONISR.",
+  'retour_nuit': "La nuit entre 22h et 6h concentre 55% des accidents mortels chez les 18-25 ans.",
+  'organisation': "Prévoir son Sam avant la soirée divise par 3 le risque de se retrouver sans conducteur sobre.",
+  'refus': "Un conducteur ayant bu sous-estime systématiquement son taux — le ressenti ne correspond jamais à la réalité.",
+  'pression': "Il est toujours possible de refuser poliment. 9 jeunes sur 10 respectent celui qui dit non.",
+  'deplacement': "Même un déplacement de 10 mètres constitue un délit de conduite en état d'ivresse.",
+  'veille': "Penser à son Sam la veille de la soirée : la meilleure façon de s'assurer que tout le monde rentre.",
+  'groupe': "La sécurité d'un groupe commence par une conversation — pas une règle.",
+  'waze': "Aucune app ne peut estimer ton alcoolémie. Seul un éthylotest homologué le peut.",
+  'traiteur': "La vigilance ne s'arrête pas à la sortie de la soirée — le trajet retour est la phase la plus risquée.",
+  'autoroute': "Les accidents de nuit sur autoroute avec alcool sont 4x plus mortels que de jour.",
+  'whatsapp': "Désigner son Sam sur le groupe WhatsApp avant la soirée : 2 secondes. Impact : toute la nuit."
+};
+
+var QUIZ_STAT_KEYS = [
+  'organisation','alcool_volant','reconnaissance','retour_nuit','veille',
+  'refus','pression','deplacement','groupe','waze','waze','whatsapp','alcool_volant','traiteur','autoroute'
+];
+
 var QUIZ_BANK=[
   /* ── Série classique ── */
   {q:"Personne n'a prévu de Sam. La soirée commence dans 2h.",ctx:"Léa a organisé la soirée mais a oublié d'en parler.",opts:[{t:"Tu proposes direct de t'y coller.",p:"protecteur",v:14},{t:"Tu lances un message pour organiser un roulement.",p:"logisticien",v:12},{t:"Tu attends que quelqu'un d'autre propose.",p:"discret",v:5},{t:"Tu rentres en Uber, c'est leur problème.",p:"libre",v:3}]},
@@ -608,10 +672,18 @@ var MOCK_NAMES={
 };
 
 var SAM_TYPES=[
-  {max:30, type:"Sam en devenir",  badge:"Niveau 1",desc:"T'as le potentiel. Avec un peu d'entraînement, tu seras l'héros que ta bande mérite."},
-  {max:55, type:"Sam occasionnel", badge:"Niveau 2",desc:"Tu connais le rôle et tu le joues quand ça compte."},
-  {max:78, type:"Sam confirmé",    badge:"Niveau 3",desc:"Ton groupe peut compter sur toi. Tu anticipes, tu organises, tu protèges."},
-  {max:999,type:"Sam légendaire",  badge:"Niveau MAX",desc:"Fiable, discret, indispensable. Le vrai héros ramène tout le monde à la maison."}
+  {max:30, type:"Sam en devenir", badge:"Niveau 1",
+   desc:"Le rôle se construit. T'as déjà le plus dur : l'envie de prendre soin de ta bande.",
+   tagline:"Le futur héros de la soirée 🌱"},
+  {max:55, type:"Sam occasionnel", badge:"Niveau 2",
+   desc:"Tu sais ce que ça veut dire, être là pour les autres. Et ta bande le sait aussi.",
+   tagline:"Fiable quand ça compte 💛"},
+  {max:78, type:"Sam confirmé", badge:"Niveau 3",
+   desc:"Tu n'attends pas qu'on te le demande. Tu anticipes, tu organises, tu protèges. C'est ça, le vrai Sam.",
+   tagline:"Le pilier du groupe 🛡️"},
+  {max:999,type:"Sam légendaire", badge:"Niveau MAX",
+   desc:"Discret, indispensable, irremplaçable. Ce soir comme tous les soirs — tu ramènes tout le monde à la maison.",
+   tagline:"Le héros que ta bande mérite 👑"}
 ];
 
 /* ══ STATE ══ */
@@ -622,6 +694,25 @@ var S={
   prof:{protecteur:0,diplomate:0,logisticien:0,discret:0,libre:0}
 };
 
+
+
+/* ══ SCORE HUD ══ */
+function updateScoreHud(){
+  var total = S.qScore + S.sitScore + S.mockScore;
+  var el = document.getElementById('hud-pts');
+  if(el){
+    var old = parseInt(el.textContent)||0;
+    if(old !== total){
+      el.textContent = total + ' pts';
+      el.classList.add('bump');
+      setTimeout(function(){ el.classList.remove('bump'); }, 250);
+    }
+  }
+  var pEl = document.getElementById('hud-prenom');
+  if(pEl && S.prenom) pEl.textContent = S.prenom;
+}
+function showScoreHud(){ document.getElementById('score-hud').classList.add('visible'); }
+function hideScoreHud(){ document.getElementById('score-hud').classList.remove('visible'); }
 
 /* ══ NAVIGATION PAR ONGLETS ══ */
 var NAV_ACTES = [
@@ -724,6 +815,8 @@ function startApp(){
   NAV_ACTES.forEach(function(a){a.unlocked=false;});
   unlockNav('s1');
   showNavBar();
+  showScoreHud();
+  updateScoreHud();
   transition('s1','Acte 1','Quiz identité');
 }
 document.getElementById('inp-prenom').addEventListener('keydown',function(e){if(e.key==='Enter')startApp();});
@@ -736,6 +829,7 @@ function renderQ(){
   document.getElementById('q-fill').style.width=Math.round((S.qIdx/QUIZ.length)*100)+'%';
   document.getElementById('q-label').textContent='Question '+(S.qIdx+1)+'/'+QUIZ.length;
   document.getElementById('q-pts').textContent=S.qScore+' pts';
+  var statBox=document.getElementById('quiz-stat-box');if(statBox)statBox.style.display='none';
   var qt=document.getElementById('q-text');qt.textContent=q.q;qt.style.animation='none';void qt.offsetWidth;qt.style.animation='fadeUp 0.4s ease both';
   var qc=document.getElementById('q-ctx');qc.textContent=q.ctx;qc.style.animation='none';void qc.offsetWidth;qc.style.animation='fadeUp 0.4s ease 0.1s both';
   var c=document.getElementById('q-opts');c.innerHTML='';
@@ -761,8 +855,35 @@ function pickOpt(idx,btn,pts,prof){
   var old=S.qScore;S.qScore+=pts;
   if(S.prof[prof]!==undefined)S.prof[prof]++;
   animScore(old,S.qScore,'q-pts',' pts');
-  if(pts>=12)flashScore('+'+pts);
-  setTimeout(advanceQ,900);
+  updateScoreHud();
+  if(pts>=12) flashScore('+'+pts);
+  /* Afficher stat pédagogique si bonne réponse */
+  if(pts>=10){
+    var statKey = QUIZ_STAT_KEYS[S.qIdx] || 'alcool_volant';
+    var statTxt = QUIZ_STATS[statKey] || '';
+    showQuizStat(statTxt);
+    setTimeout(advanceQ, 2000);
+  } else {
+    setTimeout(advanceQ, 900);
+  }
+}
+
+function showQuizStat(txt){
+  if(!txt) return;
+  var el = document.getElementById('quiz-stat-box');
+  if(!el) return;
+  el.textContent = '💡 ' + txt;
+  el.style.opacity = '0';
+  el.style.display = 'block';
+  el.style.transform = 'translateY(10px)';
+  var t0 = performance.now();
+  function fadeIn(ts){
+    var p = Math.min((ts-t0)/250,1);
+    el.style.opacity = p;
+    el.style.transform = 'translateY('+(10*(1-p))+'px)';
+    if(p<1) requestAnimationFrame(fadeIn);
+  }
+  requestAnimationFrame(fadeIn);
 }
 function advanceQ(){if(S.qIdx+1>=QUIZ.length)transition('s2','Acte 2','Qui est Sam ce soir ?');else{S.qIdx++;renderQ();}}
 function animScore(from,to,elId,suf){var el=document.getElementById(elId),t0=performance.now(),dur=400;function st(ts){var p=Math.min((ts-t0)/dur,1);el.textContent=Math.round(from+p*(to-from))+(suf||'');el.style.transform=p<1?'scale(1.15)':'scale(1)';if(p<1)requestAnimationFrame(st);else el.style.transform='scale(1)';}requestAnimationFrame(st);}
@@ -1034,7 +1155,7 @@ function renderSitCard(){
 function answerSit(idx){
   var sit=SITUATIONS[S.sitIdx];var opt=sit.opts[idx];
   document.querySelectorAll('.sit-btn').forEach(function(b,i){b.disabled=true;b.onclick=null;if(sit.opts[i].correct)b.classList.add('correct');else if(i===idx)b.classList.add('wrong');else b.classList.add('dim');});
-  if(opt.correct){S.sitScore+=opt.pts;flashScore('+'+opt.pts);}
+  if(opt.correct){S.sitScore+=opt.pts;flashScore('+'+opt.pts);updateScoreHud();}
   var fb=document.getElementById('sit-fb');fb.innerHTML=(opt.correct?'✓ '+sit.feedback.good:'! '+sit.feedback.bad);fb.classList.add('show');
   S.sitAnswers.push({correct:opt.correct,pts:opt.pts});
   setTimeout(function(){S.sitIdx++;renderSitPips();if(S.sitIdx<SITUATIONS.length)renderSitCard();else showSitSummary();},1800);
@@ -1208,6 +1329,7 @@ function updateBarScore(){
   S.mockScore=S.mockBaseScore+S.mockBonusScore+balBonus;
   var old=parseInt(document.getElementById('bar-score-val').textContent)||0;
   animScore(old,S.mockScore,'bar-score-val',' pts');
+  updateScoreHud();
   if(S.mockBonusScore>0)flashScore('+combo!');
   if(S.selIngs.length>=4){
     var tips=S.selIngs.map(function(s){return BAR_INGS.find(function(i){return i.id===s.id;}).tip;}).join(' ');
@@ -1227,6 +1349,8 @@ function initResults(){
   document.getElementById('r-badge').textContent=t.badge;
   document.getElementById('r-type').textContent=t.type+' — '+(pl[dom]||'Sam');
   document.getElementById('r-desc').textContent=t.desc;
+  var tagEl=document.getElementById('r-tagline');
+  if(tagEl) tagEl.textContent=t.tagline||'';
   document.getElementById('r-mocktail').textContent=S.mocktailName||'Sam Spécial';
   var el=document.getElementById('r-score'),t0=performance.now(),dur=1200;
   el.textContent='0';
@@ -1248,24 +1372,111 @@ var CCOL=['#FFCF00','#00B0FF','#12CCBD','#FA26FA','#9C45FF','#FF6B6B'];
 function launchConfetti(){for(var i=0;i<80;i++){(function(d){setTimeout(function(){var el=document.createElement('div');el.className='confetti-piece';var col=CCOL[Math.floor(Math.random()*CCOL.length)],x=Math.random()*100,rot=Math.random()*360,sz=6+Math.random()*8;el.style.cssText='left:'+x+'vw;top:-10px;width:'+sz+'px;height:'+sz+'px;background:'+col+';border-radius:'+(Math.random()>0.5?'50%':'2px')+';transform:rotate('+rot+'deg);';document.body.appendChild(el);var t0=performance.now(),dur=1200+Math.random()*1000,dx=(Math.random()-0.5)*20;function fall(ts){var p=Math.min((ts-t0)/dur,1);el.style.top=(p*(window.innerHeight+20)-10)+'px';el.style.left=(x+p*dx)+'vw';el.style.transform='rotate('+(rot+p*720)+'deg)';el.style.opacity=p<0.8?1:(1-(p-0.8)/0.2);if(p<1)requestAnimationFrame(fall);else el.remove();}requestAnimationFrame(fall);},d);})(i*25+Math.random()*200);}}
 
 /* ══ CANVAS CARD ══ */
-function genCard(prenom,score,type,mocktail,badge){var cv=document.getElementById('card-canvas'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height;ctx.clearRect(0,0,W,H);ctx.fillStyle='#07070F';ctx.fillRect(0,0,W,H);var grd=ctx.createLinearGradient(0,0,W,0);grd.addColorStop(0,'#FA26FA');grd.addColorStop(0.33,'#FFCF00');grd.addColorStop(0.66,'#00B0FF');grd.addColorStop(1,'#12CCBD');ctx.strokeStyle=grd;ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(5,5,W-10,H-10,14);ctx.stroke();ctx.fillStyle='#FFCF00';ctx.fillRect(5,5,W-10,56);/* Logo SAM : visage blanc avec yeux cerclés */
-  ctx.fillStyle='white';ctx.beginPath();ctx.arc(44,30,18,0,Math.PI*2);ctx.fill();
-  ctx.strokeStyle='black';ctx.lineWidth=2.5;ctx.stroke();
+function genCard(prenom,score,type,mocktail,badge){
+  var cv=document.getElementById('card-canvas'),ctx=cv.getContext('2d');
+  var W=1080,H=1920;
+  ctx.clearRect(0,0,W,H);
+
+  /* ── Fond dégradé Stories ── */
+  var bgGrad=ctx.createLinearGradient(0,0,W,H);
+  bgGrad.addColorStop(0,'#07070F');
+  bgGrad.addColorStop(0.5,'#0D0D2A');
+  bgGrad.addColorStop(1,'#07070F');
+  ctx.fillStyle=bgGrad;
+  ctx.fillRect(0,0,W,H);
+
+  /* ── Halo central jaune ── */
+  var halo=ctx.createRadialGradient(W/2,H*0.42,0,W/2,H*0.42,600);
+  halo.addColorStop(0,'rgba(255,207,0,0.12)');
+  halo.addColorStop(1,'transparent');
+  ctx.fillStyle=halo;
+  ctx.fillRect(0,0,W,H);
+
+  /* ── Bordure dégradé couleurs SAM ── */
+  var borderGrad=ctx.createLinearGradient(0,0,W,H);
+  borderGrad.addColorStop(0,'#FA26FA');
+  borderGrad.addColorStop(0.33,'#FFCF00');
+  borderGrad.addColorStop(0.66,'#00B0FF');
+  borderGrad.addColorStop(1,'#12CCBD');
+  ctx.strokeStyle=borderGrad;
+  ctx.lineWidth=12;
+  ctx.beginPath();
+  ctx.roundRect(20,20,W-40,H-40,40);
+  ctx.stroke();
+
+  /* ── Logo SAM en haut ── */
+  var lx=W/2, ly=280, lr=120;
+  ctx.fillStyle='white';ctx.beginPath();ctx.arc(lx,ly,lr,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#000';ctx.lineWidth=14;ctx.stroke();
   /* Œil gauche */
-  ctx.strokeStyle='black';ctx.lineWidth=2;ctx.beginPath();ctx.arc(38,28,6,0,Math.PI*2);ctx.stroke();
-  ctx.fillStyle='black';ctx.beginPath();ctx.arc(38,28,1.8,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(lx-42,ly-18,32,0,Math.PI*2);ctx.strokeStyle='#000';ctx.lineWidth=12;ctx.stroke();
+  ctx.fillStyle='#000';ctx.beginPath();ctx.arc(lx-42,ly-18,10,0,Math.PI*2);ctx.fill();
   /* Œil droit */
-  ctx.beginPath();ctx.arc(50,28,6,0,Math.PI*2);ctx.stroke();
-  ctx.fillStyle='black';ctx.beginPath();ctx.arc(50,28,1.8,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(lx+42,ly-18,32,0,Math.PI*2);ctx.strokeStyle='#000';ctx.lineWidth=12;ctx.stroke();
+  ctx.fillStyle='#000';ctx.beginPath();ctx.arc(lx+42,ly-18,10,0,Math.PI*2);ctx.fill();
   /* Sourire */
-  ctx.beginPath();ctx.arc(44,30,8,0.3,Math.PI-0.3);ctx.strokeStyle='black';ctx.lineWidth=2;ctx.stroke();
-  /* SAM text */
-  ctx.fillStyle='#000';ctx.font='bold 22px Arial';ctx.textAlign='left';ctx.fillText('SAM',70,38);
-  ctx.font='11px Arial';ctx.fillStyle='#333';ctx.fillText("CARTE D'IDENTITÉ",70,52);
-  ctx.font='bold 13px Arial';ctx.fillStyle='#000';ctx.fillText(prenom.toUpperCase(),70,66);var sg=ctx.createLinearGradient(W/2-80,100,W/2+80,200);sg.addColorStop(0,'#FFCF00');sg.addColorStop(1,'#00B0FF');ctx.fillStyle=sg;ctx.font='bold 88px Arial';ctx.textAlign='center';ctx.fillText(String(score),W/2,185);ctx.fillStyle='rgba(242,242,240,0.4)';ctx.font='12px Arial';ctx.fillText('SAM SCORE',W/2,206);ctx.fillStyle='#FFCF00';ctx.font='bold 24px Arial';ctx.fillText(type.toUpperCase(),W/2,248);ctx.fillStyle='rgba(255,207,0,0.6)';ctx.font='bold 12px Arial';ctx.fillText(badge,W/2,272);ctx.fillStyle='#00B0FF';ctx.font='bold 14px Arial';ctx.fillText('Mocktail : '+mocktail,W/2,312);ctx.fillStyle='rgba(242,242,240,0.18)';ctx.font='10px Arial';ctx.fillText('sam-experience.fr',W/2,358);ctx.textAlign='left';}
-function dlCard(){var l=document.createElement('a');l.download='carte-sam-'+S.prenom.toLowerCase()+'.png';l.href=document.getElementById('card-canvas').toDataURL('image/png');l.click();}
+  ctx.beginPath();ctx.arc(lx,ly,60,0.3,Math.PI-0.3);ctx.strokeStyle='#000';ctx.lineWidth=12;ctx.lineCap='square';ctx.stroke();
+
+  /* ── SAM tagline ── */
+  ctx.fillStyle='#FFCF00';ctx.font='bold 72px Arial';ctx.textAlign='center';
+  ctx.fillText('SAM',W/2,480);
+  ctx.fillStyle='rgba(255,255,255,0.35)';ctx.font='32px Arial';
+  ctx.fillText('UNE NUIT AVEC SAM',W/2,530);
+
+  /* ── Prénom ── */
+  ctx.fillStyle='rgba(255,255,255,0.5)';ctx.font='44px Arial';
+  ctx.fillText(prenom.toUpperCase(),W/2,680);
+
+  /* ── Score ── */
+  var scoreGrad=ctx.createLinearGradient(W/2-200,750,W/2+200,900);
+  scoreGrad.addColorStop(0,'#FFCF00');
+  scoreGrad.addColorStop(1,'#00B0FF');
+  ctx.fillStyle=scoreGrad;
+  ctx.font='bold 260px Arial';
+  ctx.fillText(String(score),W/2,930);
+  ctx.fillStyle='rgba(255,255,255,0.3)';ctx.font='36px Arial';
+  ctx.fillText('SAM SCORE',W/2,990);
+
+  /* ── Ligne séparatrice ── */
+  var sepGrad=ctx.createLinearGradient(120,1040,W-120,1040);
+  sepGrad.addColorStop(0,'transparent');
+  sepGrad.addColorStop(0.5,'rgba(255,207,0,0.4)');
+  sepGrad.addColorStop(1,'transparent');
+  ctx.strokeStyle=sepGrad;ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(120,1060);ctx.lineTo(W-120,1060);ctx.stroke();
+
+  /* ── Badge profil ── */
+  var bx=W/2, by=1160, bw=700, bh=110;
+  ctx.fillStyle='#FFCF00';
+  ctx.beginPath();ctx.roundRect(bx-bw/2,by-bh/2,bw,bh,55);ctx.fill();
+  ctx.fillStyle='#000';ctx.font='bold 52px Arial';
+  ctx.fillText(badge.toUpperCase(),bx,by+18);
+
+  /* ── Type Sam ── */
+  ctx.fillStyle='#FFCF00';ctx.font='bold 68px Arial';
+  ctx.fillText(type.toUpperCase(),W/2,1330);
+
+  /* ── Mocktail ── */
+  ctx.fillStyle='rgba(0,176,255,0.7)';ctx.font='36px Arial';
+  ctx.fillText('🍹 '+mocktail,W/2,1440);
+
+  /* ── Message ── */
+  ctx.fillStyle='rgba(255,255,255,0.25)';ctx.font='30px Arial';
+  ctx.fillText('\u00catre Sam, c\u2019est le r\u00f4le le plus important de la soir\u00e9e.',W/2,1560);
+
+  /* ── Hashtag ── */
+  ctx.fillStyle='rgba(255,207,0,0.5)';ctx.font='bold 42px Arial';
+  ctx.fillText('#JeSuisSam',W/2,1680);
+
+  /* ── URL ── */
+  ctx.fillStyle='rgba(255,255,255,0.2)';ctx.font='28px Arial';
+  ctx.fillText('sam-experience.fr',W/2,1860);
+
+  ctx.textAlign='left';
+}
+function dlCard(){var l=document.createElement('a');l.download='sam-story-'+S.prenom.toLowerCase()+'.png';l.href=document.getElementById('card-canvas').toDataURL('image/png');l.click();}
 function copyShare(){var total=S.qScore+S.sitScore+S.mockScore;var t=SAM_TYPES.find(function(x){return total<=x.max;})||SAM_TYPES[SAM_TYPES.length-1];var msg=S.prenom+' — '+total+' pts "'+t.type+'". Et toi ? sam-experience.fr';if(navigator.clipboard){navigator.clipboard.writeText(msg).then(function(){var el=document.getElementById('copied');el.textContent='Lien copié !';el.style.opacity='1';setTimeout(function(){el.style.opacity='0';},2500);});}}
-function restart(){S.qScore=0;S.sitScore=0;S.mockScore=0;S.qIdx=0;pickQuiz();S.sitIdx=0;S.sitAnswers=[];S.selIngs=[];S.mocktailName='';S.mockBonusScore=0;S.mockBaseScore=0;S.prof={protecteur:0,diplomate:0,logisticien:0,discret:0,libre:0};NAV_ACTES.forEach(function(a){a.unlocked=false;});hideNavBar();document.getElementById('inp-prenom').value='';document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById('s0').classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+function restart(){S.qScore=0;S.sitScore=0;S.mockScore=0;S.qIdx=0;pickQuiz();S.sitIdx=0;S.sitAnswers=[];S.selIngs=[];S.mocktailName='';S.mockBonusScore=0;S.mockBaseScore=0;S.prof={protecteur:0,diplomate:0,logisticien:0,discret:0,libre:0};NAV_ACTES.forEach(function(a){a.unlocked=false;});hideNavBar();hideScoreHud();document.getElementById('inp-prenom').value='';document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById('s0').classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
 </script>
 </body>
 </html>
