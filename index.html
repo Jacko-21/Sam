@@ -797,12 +797,13 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
   document.getElementById(id).classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
+  unlockNav(id);
+  renderNavBar();
   if(id==='s1')initQuiz();
-  if(id==='s2')initDrawScreen();
-  if(id==='s3')initSituations();
-  if(id==='s3')initSituations();
-  if(id==='s4')initBar();
-  if(id==='s5')initResults();
+  else if(id==='s2')initDrawScreen();
+  else if(id==='s3')initSituations();
+  else if(id==='s4')initBar();
+  else if(id==='s5')initResults();
 }
 
 /* ══ START ══ */
@@ -859,7 +860,8 @@ function pickOpt(idx,btn,pts,prof){
   if(pts>=12) flashScore('+'+pts);
   /* Afficher stat pédagogique si bonne réponse */
   if(pts>=10){
-    var statKey = QUIZ_STAT_KEYS[S.qIdx] || 'alcool_volant';
+    var bankIdx = QUIZ_BANK.indexOf(QUIZ[S.qIdx]);
+    var statKey = (bankIdx>=0 ? QUIZ_STAT_KEYS[bankIdx] : null) || 'alcool_volant';
     var statTxt = QUIZ_STATS[statKey] || '';
     showQuizStat(statTxt);
     setTimeout(advanceQ, 2000);
@@ -925,7 +927,7 @@ function addDrawName(){
   var val=document.getElementById('draw-inp').value.trim();
   var err=document.getElementById('draw-err');
   if(!val){err.textContent='Entre un prénom.';return;}
-  if(DRAW.names.includes(val)){err.textContent=val+' est déjà dans la liste.';return;}
+  if(DRAW.names.some(function(n){return n.toLowerCase()===val.toLowerCase();})){err.textContent=val+' est déjà dans la liste.';return;}
   if(DRAW.names.length>=10){err.textContent='Maximum 10 personnes.';return;}
   err.textContent='';
   DRAW.names.push(val);
@@ -1360,7 +1362,7 @@ function initResults(){
   [['Quiz identité',S.qScore+' pts'],['Situations',S.sitScore+' pts'],['Bar de Sam',S.mockScore+' pts'],['Total',total+' pts']].forEach(function(r,i){
     var row=document.createElement('div');row.className='bd-row';
     row.style.animation='fadeUp 0.4s ease '+(0.5+i*0.06)+'s both';
-    if(i===4)row.style.borderTop='1px solid var(--border2)';
+    if(i===3)row.style.borderTop='1px solid var(--border2)';
     row.innerHTML='<span>'+r[0]+'</span><span>'+r[1]+'</span>';
     bd.appendChild(row);
   });
