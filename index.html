@@ -267,16 +267,6 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 .nav-lock{position:absolute;top:3px;right:6px;font-size:9px;opacity:0.6;}
 
 
-@keyframes bombShake{
-  0%{transform:translate(0,0) rotate(0deg);}
-  15%{transform:translate(-8px,4px) rotate(-3deg);}
-  30%{transform:translate(8px,-4px) rotate(3deg);}
-  45%{transform:translate(-6px,6px) rotate(-2deg);}
-  60%{transform:translate(6px,-2px) rotate(2deg);}
-  75%{transform:translate(-4px,4px) rotate(-1deg);}
-  90%{transform:translate(4px,-2px) rotate(1deg);}
-  100%{transform:translate(0,0) rotate(0deg);}
-}
 @keyframes bounceIn{
   0%{opacity:0;transform:scale(0.3);}
   50%{transform:scale(1.15);}
@@ -309,6 +299,28 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
   transition:transform 0.2s;
 }
 .score-hud-pts.bump{transform:scale(1.3);}
+
+/* Roue */
+#wheel-canvas{display:block;}
+.wheel-wrap{position:relative;width:280px;height:280px;margin:0 auto 1.5rem;}
+.wheel-pointer{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:26px solid var(--y);filter:drop-shadow(0 2px 6px rgba(255,207,0,0.6));z-index:2;}
+
+/* ══ SUPER SAM HERO ══ */
+#hero-overlay{position:fixed;inset:0;z-index:850;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 42%,rgba(255,207,0,0.18) 0%,rgba(7,7,15,0.97) 65%);}
+#hero-overlay.show{display:flex;}
+@keyframes heroFlyIn{0%{opacity:0;transform:translateY(100px) scale(0.5);}55%{transform:translateY(-18px) scale(1.07);}100%{opacity:1;transform:translateY(0) scale(1);}}
+@keyframes raysRot{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+@keyframes heroNameIn{0%{opacity:0;transform:scale(0.3) rotate(-8deg);}65%{transform:scale(1.1) rotate(2deg);}100%{opacity:1;transform:scale(1) rotate(0deg);}}
+@keyframes heroSubIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes ringExpand{0%{transform:scale(0.5);opacity:0.7;}100%{transform:scale(2.6);opacity:0;}}
+@keyframes capeFlap{0%,100%{transform:skewY(-2deg) scaleX(1);}50%{transform:skewY(3deg) scaleX(1.04);}}
+@keyframes heroOverlayOut{from{opacity:1;}to{opacity:0;}}
+.hero-ring{position:absolute;border-radius:50%;border:3px solid rgba(255,207,0,0.5);pointer-events:none;}
+#hero-figure{animation:heroFlyIn 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.15s both;}
+#hero-cape{animation:capeFlap 0.8s ease-in-out infinite;}
+#hero-name{font-family:'Barlow Condensed',sans-serif;font-size:clamp(48px,14vw,76px);font-weight:900;color:var(--y);text-transform:uppercase;letter-spacing:-0.02em;line-height:1;animation:heroNameIn 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.75s both;text-shadow:0 0 40px rgba(255,207,0,0.6);}
+#hero-sub{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.55);animation:heroSubIn 0.5s ease 1.2s both;margin-top:6px;}
+#hero-banner{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;background:var(--y);color:#000;padding:5px 18px;border-radius:40px;letter-spacing:0.12em;text-transform:uppercase;animation:heroNameIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 1.45s both;margin-top:14px;}
 
 </style>
 </head>
@@ -379,15 +391,15 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 </div>
 
 
-<!-- S2: TIRAGE AU SORT SAM — BOMBE -->
+<!-- S2: TIRAGE AU SORT SAM — ROUE -->
 <div class="screen" id="s2">
   <div class="tag tc">Acte 2 — Qui est Sam ce soir ?</div>
 
   <!-- PHASE 1 : Saisie -->
   <div id="draw-input" style="width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center;">
-    <div style="font-size:60px;text-align:center;margin-bottom:1rem;animation:fadeUp 0.4s ease both;">💣</div>
+    <div style="font-size:60px;text-align:center;margin-bottom:1rem;animation:fadeUp 0.4s ease both;">🎡</div>
     <p style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;text-transform:uppercase;text-align:center;margin-bottom:0.4rem;animation:fadeUp 0.4s ease 0.1s both;">Qui est dans le groupe ?</p>
-    <p class="sub" style="margin-bottom:1.5rem;animation:fadeUp 0.4s ease 0.2s both;">Ajoute les prénoms. La bombe désigne le Sam.</p>
+    <p class="sub" style="margin-bottom:1.5rem;animation:fadeUp 0.4s ease 0.2s both;">Ajoute les prénoms. La roue désigne le Sam.</p>
     <div style="display:flex;gap:8px;width:100%;margin-bottom:1rem;animation:fadeUp 0.4s ease 0.3s both;">
       <input id="draw-inp" class="inp" type="text" placeholder="Prénom…" maxlength="16" autocomplete="off"
         style="margin:0;flex:1;font-size:18px;padding:13px 16px;"
@@ -396,44 +408,22 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
     </div>
     <p class="err" id="draw-err" style="margin-bottom:0.5rem;min-height:18px;"></p>
     <div id="draw-list" style="width:100%;display:flex;flex-wrap:wrap;gap:8px;min-height:44px;margin-bottom:1.5rem;"></div>
-    <button class="btn btn-y" id="btn-draw-start" onclick="startDraw()" disabled style="opacity:0.35;">Allumer la mèche 💣</button>
+    <button class="btn btn-y" id="btn-draw-start" onclick="startDraw()" disabled style="opacity:0.35;">Lancer la roue 🎡</button>
   </div>
 
-  <!-- PHASE 2 : Bombe -->
-  <div id="draw-machine" style="display:none;width:100%;max-width:400px;flex-direction:column;align-items:center;">
-
-    <!-- Bombe SVG animée -->
-    <div style="position:relative;width:160px;height:160px;margin-bottom:1.5rem;">
-      <svg id="bomb-svg" width="160" height="160" viewBox="0 0 160 160">
-        <!-- Corps bombe -->
-        <circle cx="82" cy="95" r="52" fill="#1a1a1a" stroke="#333" stroke-width="3"/>
-        <!-- Reflet -->
-        <ellipse cx="65" cy="75" rx="14" ry="9" fill="rgba(255,255,255,0.08)" transform="rotate(-30,65,75)"/>
-        <!-- Mèche -->
-        <path id="bomb-fuse" d="M82 43 Q100 20 115 10" fill="none" stroke="#cc8800" stroke-width="4" stroke-linecap="round"/>
-        <!-- Étincelle (point animé au bout de la mèche) -->
-        <circle id="bomb-spark" cx="115" cy="10" r="5" fill="#FFCF00">
-          <animate attributeName="r" values="5;8;4;7;5" dur="0.3s" repeatCount="indefinite"/>
-          <animate attributeName="fill" values="#FFCF00;#FF6600;#FFCF00;#FF4400;#FFCF00" dur="0.3s" repeatCount="indefinite"/>
-        </circle>
-        <!-- Cerceaux métal -->
-        <path d="M34 95 Q34 47 82 47 Q130 47 130 95" fill="none" stroke="#444" stroke-width="5" stroke-linecap="round"/>
-        <path d="M36 110 Q34 140 82 143 Q130 140 128 110" fill="none" stroke="#444" stroke-width="5" stroke-linecap="round"/>
-      </svg>
-      <!-- Timer au centre de la bombe -->
-      <div id="bomb-timer" style="position:absolute;top:50%;left:50%;transform:translate(-44%,-38%);font-family:'Barlow Condensed',sans-serif;font-size:42px;font-weight:900;color:#FFCF00;text-shadow:0 0 20px rgba(255,207,0,0.8);line-height:1;"></div>
+  <!-- PHASE 2 : Roue -->
+  <div id="draw-wheel" style="display:none;width:100%;max-width:400px;flex-direction:column;align-items:center;">
+    <div class="wheel-wrap">
+      <div class="wheel-pointer"></div>
+      <canvas id="wheel-canvas" width="280" height="280"></canvas>
     </div>
-
-    <!-- Prénoms qui clignotent -->
-    <div id="bomb-names" style="width:100%;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:1.5rem;min-height:60px;"></div>
-
-    <p id="bomb-msg" style="font-size:14px;color:var(--muted);font-style:italic;text-align:center;min-height:20px;"></p>
+    <p id="wheel-msg" style="font-size:14px;color:var(--muted);font-style:italic;text-align:center;min-height:20px;animation:pulse 1.5s ease infinite;"></p>
   </div>
 
   <!-- PHASE 3 : Explosion + Résultat -->
   <div id="draw-result" style="display:none;width:100%;max-width:400px;flex-direction:column;align-items:center;">
     <div id="explosion-emoji" style="font-size:80px;text-align:center;margin-bottom:1rem;"></div>
-    <div style="font-size:16px;font-weight:600;color:var(--muted);text-align:center;margin-bottom:0.75rem;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.08em;">La bombe a choisi…</div>
+    <div style="font-size:16px;font-weight:600;color:var(--muted);text-align:center;margin-bottom:0.75rem;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.08em;">La roue a désigné…</div>
     <div style="width:100%;background:var(--s2);border:3px solid var(--y);border-radius:20px;padding:2rem 1.5rem;text-align:center;margin-bottom:1.5rem;position:relative;overflow:hidden;box-shadow:0 0 60px rgba(255,207,0,0.15);">
       <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--m),var(--y),var(--c));"></div>
       <div style="display:flex;justify-content:center;margin-bottom:1rem;">
@@ -532,6 +522,83 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
   </div>
   <p class="copied" id="copied" style="opacity:0;margin-bottom:0.5rem;"></p>
   <button class="btn btn-o" onclick="restart()" style="animation:fadeUp 0.4s ease 0.5s both;">Rejouer</button>
+</div>
+
+<!-- SUPER SAM HERO OVERLAY -->
+<div id="hero-overlay">
+  <div style="position:relative;display:flex;flex-direction:column;align-items:center;">
+    <!-- Anneaux pulsants -->
+    <div class="hero-ring" id="hring1" style="width:200px;height:200px;top:50%;left:50%;margin:-100px 0 0 -100px;"></div>
+    <div class="hero-ring" id="hring2" style="width:200px;height:200px;top:50%;left:50%;margin:-100px 0 0 -100px;animation-delay:0.3s;"></div>
+    <!-- Rayons rotatifs -->
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-54%);pointer-events:none;">
+      <svg id="hero-rays-svg" width="320" height="320" viewBox="0 0 320 320" style="animation:raysRot 8s linear infinite;opacity:0.22;">
+        <g transform="translate(160,160)">
+          <polygon points="0,-155 10,-40 0,-30 -10,-40" fill="#FFCF00"/>
+          <polygon points="0,-155 10,-40 0,-30 -10,-40" fill="#FFCF00" transform="rotate(30)"/>
+          <polygon points="0,-155 10,-40 0,-30 -10,-40" fill="#FFCF00" transform="rotate(60)"/>
+          <polygon points="0,-155 10,-40 0,-30 -10,-40" fill="#FFCF00" transform="rotate(90)"/>
+          <polygon points="0,-155 10,-40 0,-30 -10,-40" fill="#FFCF00" transform="rotate(120)"/>
+          <polygon points="0,-155 10,-40 0,-30 -10,-40" fill="#FFCF00" transform="rotate(150)"/>
+          <polygon points="0,-155 10,-40 0,-30 -10,-40" fill="#FFCF00" transform="rotate(180)"/>
+          <polygon points="0,-155 10,-40 0,-30 -10,-40" fill="#FFCF00" transform="rotate(210)"/>
+          <polygon points="0,-155 10,-40 0,-30 -10,-40" fill="#FFCF00" transform="rotate(240)"/>
+          <polygon points="0,-155 10,-40 0,-30 -10,-40" fill="#FFCF00" transform="rotate(270)"/>
+          <polygon points="0,-155 10,-40 0,-30 -10,-40" fill="#FFCF00" transform="rotate(300)"/>
+          <polygon points="0,-155 10,-40 0,-30 -10,-40" fill="#FFCF00" transform="rotate(330)"/>
+        </g>
+      </svg>
+    </div>
+    <!-- Figure héros SAM -->
+    <div id="hero-figure">
+      <svg width="190" height="270" viewBox="0 0 190 270">
+        <!-- Cape (derrière) -->
+        <path id="hero-cape" d="M52 118 Q18 185 32 258 Q78 234 95 196 Q112 234 158 258 Q172 185 138 118 Q115 128 95 126 Q75 128 52 118" fill="#FFB800"/>
+        <path d="M57 120 Q26 182 40 252 Q80 232 95 197 Q110 232 150 252 Q164 182 133 120 Q115 130 95 128 Q75 130 57 120" fill="#FFCF00" opacity="0.7"/>
+        <!-- Jambes -->
+        <rect x="76" y="196" width="16" height="58" rx="8" fill="#0D0D2A"/>
+        <rect x="98" y="196" width="16" height="58" rx="8" fill="#0D0D2A"/>
+        <!-- Bottes -->
+        <ellipse cx="84" cy="254" rx="16" ry="8" fill="#FFCF00"/>
+        <ellipse cx="106" cy="254" rx="16" ry="8" fill="#FFCF00"/>
+        <!-- Corps -->
+        <rect x="62" y="122" width="66" height="78" rx="14" fill="#0D0D2A"/>
+        <!-- Écusson S -->
+        <circle cx="95" cy="158" r="20" fill="#FFCF00"/>
+        <text x="95" y="166" text-anchor="middle" font-size="22" font-weight="900" font-family="Arial Black,sans-serif" fill="#000">S</text>
+        <!-- Bras gauche levé -->
+        <path d="M62 140 Q36 116 26 84" stroke="#e8e8e8" stroke-width="14" stroke-linecap="round" fill="none"/>
+        <!-- Poing gauche -->
+        <circle cx="24" cy="79" r="13" fill="#e8e8e8"/>
+        <path d="M17 76 Q24 70 31 76" stroke="#aaa" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Bras droit levé -->
+        <path d="M128 140 Q154 116 164 84" stroke="#e8e8e8" stroke-width="14" stroke-linecap="round" fill="none"/>
+        <!-- Poing droit -->
+        <circle cx="166" cy="79" r="13" fill="#e8e8e8"/>
+        <path d="M159 76 Q166 70 173 76" stroke="#aaa" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Tête -->
+        <circle cx="95" cy="72" r="46" fill="white" stroke="#111" stroke-width="3.5"/>
+        <!-- Masque héros (visor cyan) -->
+        <path d="M56 68 Q95 52 134 68 Q128 85 95 85 Q62 85 56 68" fill="rgba(0,176,255,0.28)" stroke="rgba(0,176,255,0.5)" stroke-width="1.5"/>
+        <!-- Yeux SAM -->
+        <circle cx="79" cy="67" r="11" fill="none" stroke="#111" stroke-width="3.5"/>
+        <circle cx="79" cy="67" r="3.5" fill="#111"/>
+        <circle cx="111" cy="67" r="11" fill="none" stroke="#111" stroke-width="3.5"/>
+        <circle cx="111" cy="67" r="3.5" fill="#111"/>
+        <!-- Sourire -->
+        <path d="M76 90 A24 22 0 0 0 114 90" fill="none" stroke="#111" stroke-width="3.5" stroke-linecap="round"/>
+        <!-- Étoiles autour de la tête -->
+        <text x="42" y="36" font-size="16" fill="#FFCF00" opacity="0.9" style="animation:pulse 1.2s ease infinite;">⭐</text>
+        <text x="136" y="30" font-size="14" fill="#00B0FF" opacity="0.9" style="animation:pulse 1.2s ease 0.4s infinite;">✦</text>
+        <text x="148" y="58" font-size="12" fill="#FFCF00" opacity="0.8" style="animation:pulse 1.2s ease 0.8s infinite;">★</text>
+        <text x="30" y="58" font-size="12" fill="#FA26FA" opacity="0.8" style="animation:pulse 1.2s ease 0.2s infinite;">✦</text>
+      </svg>
+    </div>
+    <!-- Nom du gagnant -->
+    <div id="hero-name"></div>
+    <div id="hero-sub">Sam de la soirée</div>
+    <div id="hero-banner">🦸 Super Sam 🦸</div>
+  </div>
 </div>
 
 <!-- BARRE DE NAVIGATION -->
@@ -717,7 +784,7 @@ function hideScoreHud(){ document.getElementById('score-hud').classList.remove('
 /* ══ NAVIGATION PAR ONGLETS ══ */
 var NAV_ACTES = [
   {id:'s1', label:'Quiz',       emoji:'🧠', unlocked:false},
-  {id:'s2', label:'Tirage',     emoji:'💣', unlocked:false},
+  {id:'s2', label:'Tirage',     emoji:'🎡', unlocked:false},
   {id:'s3', label:'Situations', emoji:'🎭', unlocked:false},
   {id:'s4', label:'Bar',        emoji:'🍹', unlocked:false},
   {id:'s5', label:'Carte',      emoji:'⭐', unlocked:false},
@@ -893,13 +960,81 @@ function flashScore(text){var el=document.getElementById('score-flash');el.textC
 
 
 /* ══ TIRAGE AU SORT SAM ══ */
-var DRAW = {
-  names:  [],
-  winner: null,
-  running: false,
-  timerInt: null,
-  highlightInt: null
-};
+var DRAW = {names:[], winner:null, running:false};
+var WHEEL_RAF = null;
+var WHEEL_COLORS = ['#FFCF00','#00B0FF','#12CCBD','#FA26FA','#9C45FF','#FF6B6B','#FF8C42','#A0E4FF'];
+
+function startWheelDraw(){
+  if(DRAW.names.length<2||DRAW.running) return;
+  DRAW.running=true;
+  var winnerIdx=Math.floor(Math.random()*DRAW.names.length);
+  DRAW.winner=DRAW.names[winnerIdx];
+  document.getElementById('draw-input').style.display='none';
+  document.getElementById('draw-wheel').style.display='flex';
+  var canvas=document.getElementById('wheel-canvas');
+  var ctx=canvas.getContext('2d');
+  var n=DRAW.names.length;
+  var sectorAngle=(2*Math.PI)/n;
+  var extraSpins=6+Math.floor(Math.random()*3);
+  var offset=(2*Math.PI-((winnerIdx+0.5)*sectorAngle%(2*Math.PI)))%(2*Math.PI);
+  var targetAngle=2*Math.PI*extraSpins+offset;
+  var duration=4000+n*300;
+  var startTime=null;
+  var wheelMsgs=['La roue tourne…','Qui va tomber dessus ?','Le destin tourne…','Ça va se jouer à rien…','Et le SAM c\'est…'];
+  var msgEl=document.getElementById('wheel-msg');
+  function easeOut(t){return 1-Math.pow(1-t,4);}
+  function animate(ts){
+    if(!startTime) startTime=ts;
+    var elapsed=ts-startTime;
+    var progress=Math.min(elapsed/duration,1);
+    var currentAngle=easeOut(progress)*targetAngle;
+    var msgIdx=Math.min(Math.floor((elapsed/duration)*wheelMsgs.length),wheelMsgs.length-1);
+    msgEl.textContent=wheelMsgs[msgIdx];
+    drawWheelFrame(ctx,canvas.width/2,canvas.height/2,currentAngle);
+    if(progress<1){WHEEL_RAF=requestAnimationFrame(animate);}
+    else{DRAW.running=false;msgEl.textContent='';setTimeout(showDrawResult,700);}
+  }
+  WHEEL_RAF=requestAnimationFrame(animate);
+}
+
+function drawWheelFrame(ctx,cx,cy,rotation){
+  var n=DRAW.names.length;
+  var radius=cx-10;
+  var sectorAngle=(2*Math.PI)/n;
+  ctx.clearRect(0,0,cx*2,cy*2);
+  for(var i=0;i<n;i++){
+    var startA=-Math.PI/2+rotation+i*sectorAngle;
+    var endA=startA+sectorAngle;
+    var col=WHEEL_COLORS[i%WHEEL_COLORS.length];
+    /* Secteur */
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,radius,startA,endA);ctx.closePath();
+    ctx.fillStyle=col;ctx.fill();
+    ctx.strokeStyle='rgba(7,7,15,0.9)';ctx.lineWidth=2;ctx.stroke();
+    /* Texte */
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(startA+sectorAngle/2);
+    ctx.textAlign='right';
+    var lightCol=(col==='#FFCF00'||col==='#12CCBD'||col==='#FF8C42'||col==='#A0E4FF');
+    ctx.fillStyle=lightCol?'#000':'#fff';
+    var fs=Math.max(10,Math.min(14,Math.floor(radius*2*Math.PI/n/3)));
+    ctx.font='800 '+fs+'px Barlow Condensed,sans-serif';
+    ctx.fillText(DRAW.names[i].toUpperCase().substring(0,10),radius-14,4);
+    ctx.restore();
+  }
+  /* Anneau extérieur */
+  ctx.beginPath();ctx.arc(cx,cy,radius,0,2*Math.PI);
+  ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.lineWidth=3;ctx.stroke();
+  /* Hub central */
+  ctx.beginPath();ctx.arc(cx,cy,22,0,2*Math.PI);
+  ctx.fillStyle='#07070F';ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=2;ctx.stroke();
+  /* Visage SAM miniature */
+  ctx.fillStyle='white';ctx.beginPath();ctx.arc(cx,cy,15,0,2*Math.PI);ctx.fill();
+  ctx.fillStyle='#000';
+  ctx.beginPath();ctx.arc(cx-4,cy-2,2,0,2*Math.PI);ctx.fill();
+  ctx.beginPath();ctx.arc(cx+4,cy-2,2,0,2*Math.PI);ctx.fill();
+  ctx.beginPath();ctx.arc(cx,cy+2,5,0.3,Math.PI-0.3);
+  ctx.strokeStyle='#000';ctx.lineWidth=1.5;ctx.lineCap='round';ctx.stroke();
+}
 
 var DRAW_MSGS = [
   'Ce soir, tu ramènes tout le monde à la maison. 🏠',
@@ -911,10 +1046,9 @@ var DRAW_MSGS = [
 
 function initDrawScreen(){
   DRAW.names=[];DRAW.winner=null;DRAW.running=false;
-  if(DRAW.timerInt){clearInterval(DRAW.timerInt);DRAW.timerInt=null;}
-  if(DRAW.highlightInt){clearInterval(DRAW.highlightInt);DRAW.highlightInt=null;}
+  if(WHEEL_RAF){cancelAnimationFrame(WHEEL_RAF);WHEEL_RAF=null;}
   document.getElementById('draw-input').style.display='flex';
-  document.getElementById('draw-machine').style.display='none';
+  document.getElementById('draw-wheel').style.display='none';
   document.getElementById('draw-result').style.display='none';
   document.getElementById('draw-list').innerHTML='';
   document.getElementById('draw-inp').value='';
@@ -962,129 +1096,43 @@ function renderDrawList(){
   btn.style.opacity=DRAW.names.length<2?'0.35':'1';
 }
 
-function startDraw(){
-  if(DRAW.names.length<2||DRAW.running) return;
-  DRAW.running=true;
-  DRAW.winner=DRAW.names[Math.floor(Math.random()*DRAW.names.length)];
+function startDraw(){ startWheelDraw(); }
 
-  document.getElementById('draw-input').style.display='none';
-  document.getElementById('draw-machine').style.display='flex';
-
-  /* ── Durée totale en fonction du nb de joueurs (5-10s) ── */
-  var totalMs = 5000 + DRAW.names.length * 400;
-  var elapsed = 0;
-  var tickMs  = 100; /* tick de base du compte à rebours */
-
-  /* ── Rendre le compteur dans la bombe ── */
-  var displaySecs = Math.ceil(totalMs / 1000);
-  var timerEl = document.getElementById('bomb-timer');
-  timerEl.textContent = displaySecs;
-
-  /* ── Rendre les noms cliquables ── */
-  renderBombNames();
-
-  /* ── Messages de suspense ── */
-  var bombMsgs = ['La mèche brûle…','Plus que quelques secondes…','Qui va sauter ?','La bombe tremble…','3… 2… 1…'];
-  var msgEl = document.getElementById('bomb-msg');
-  msgEl.textContent = bombMsgs[0];
-
-  /* ── Vitesse de surlignage : commence lente, accélère ── */
-  var currentIdx = 0;
-  var highlightDelay = 400; /* ms entre deux surlignages */
-  var minDelay = 60;
-
-  function highlightNext(){
-    /* Surligner le prénom courant */
-    var nameEls = document.querySelectorAll('.bomb-name-tag');
-    nameEls.forEach(function(el,i){
-      if(i===currentIdx){
-        el.style.background='var(--y)';
-        el.style.color='#000';
-        el.style.transform='scale(1.12)';
-        el.style.boxShadow='0 0 18px rgba(255,207,0,0.6)';
-      } else {
-        el.style.background='var(--s2)';
-        el.style.color='var(--muted)';
-        el.style.transform='scale(1)';
-        el.style.boxShadow='none';
-      }
-    });
-    currentIdx=(currentIdx+1)%DRAW.names.length;
-
-    /* Accélérer progressivement */
-    var progress=elapsed/totalMs;
-    highlightDelay=Math.max(minDelay, 400-Math.floor(progress*340));
-    DRAW.highlightInt=setTimeout(highlightNext, highlightDelay);
-  }
-  highlightNext();
-
-  /* ── Compte à rebours ── */
-  DRAW.timerInt=setInterval(function(){
-    elapsed+=tickMs;
-    var secsLeft=Math.ceil((totalMs-elapsed)/1000);
-    timerEl.textContent=secsLeft>0?secsLeft:'💥';
-
-    /* Changer couleur quand urgence */
-    if(secsLeft<=3){
-      timerEl.style.color='#FF4F4F';
-      timerEl.style.textShadow='0 0 20px rgba(255,79,79,0.9)';
-      /* Faire trembler la bombe */
-      var bomb=document.getElementById('bomb-svg');
-      var shake=Math.round(Math.random()*6-3);
-      bomb.style.transform='translateX('+shake+'px) rotate('+(shake*0.5)+'deg)';
-    }
-
-    /* Mettre à jour le message */
-    var msgIdx=Math.floor((elapsed/totalMs)*bombMsgs.length);
-    msgEl.textContent=bombMsgs[Math.min(msgIdx,bombMsgs.length-1)];
-
-    if(elapsed>=totalMs){
-      clearInterval(DRAW.timerInt);
-      clearTimeout(DRAW.highlightInt);
-      DRAW.timerInt=null; DRAW.highlightInt=null;
-      explode();
-    }
-  }, tickMs);
+function showDrawResult(){
+  document.getElementById('draw-wheel').style.display='none';
+  /* Animation Super SAM héros */
+  document.getElementById('hero-name').textContent=DRAW.winner;
+  var overlay=document.getElementById('hero-overlay');
+  overlay.style.animation='';
+  overlay.style.opacity='1';
+  overlay.classList.add('show');
+  launchHeroRings();
+  setTimeout(function(){
+    /* Fade out overlay */
+    overlay.style.animation='heroOverlayOut 0.5s ease forwards';
+    setTimeout(function(){
+      overlay.classList.remove('show');
+      overlay.style.animation='';
+      showDrawResultCard();
+    },500);
+  },3000);
 }
 
-function renderBombNames(){
-  var el=document.getElementById('bomb-names');
-  el.innerHTML='';
-  DRAW.names.forEach(function(name){
-    var tag=document.createElement('div');
-    tag.className='bomb-name-tag';
-    tag.style.cssText='padding:8px 18px;border-radius:40px;background:var(--s2);border:1.5px solid var(--border2);font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:var(--muted);transition:all 0.12s cubic-bezier(0.34,1.56,0.64,1);';
-    tag.textContent=name;
-    el.appendChild(tag);
+function launchHeroRings(){
+  ['hring1','hring2'].forEach(function(id,i){
+    var el=document.getElementById(id);
+    el.style.animation='none';
+    void el.offsetWidth;
+    el.style.animation='ringExpand 1.2s ease '+(i*0.35)+'s infinite';
   });
 }
 
-function explode(){
-  DRAW.running=false;
-
-  /* Flash rouge plein écran */
-  var flash=document.createElement('div');
-  flash.style.cssText='position:fixed;inset:0;background:#FF2200;z-index:999;pointer-events:none;opacity:0.85;';
-  document.body.appendChild(flash);
-
-  /* Faire trembler massivement */
-  document.body.style.animation='bombShake 0.4s ease';
-
-  setTimeout(function(){
-    flash.remove();
-    document.body.style.animation='';
-    document.getElementById('bomb-svg').style.transform='';
-    showDrawResult();
-  }, 300);
-}
-
-function showDrawResult(){
-  document.getElementById('draw-machine').style.display='none';
+function showDrawResultCard(){
   document.getElementById('draw-result').style.display='flex';
 
-  /* Emoji explosion animé */
+  /* Emoji résultat animé */
   var exEl=document.getElementById('explosion-emoji');
-  exEl.textContent='💥';
+  exEl.textContent='🎡';
   exEl.style.animation='bounceIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both';
   setTimeout(function(){
     exEl.textContent='🏆';
@@ -1126,8 +1174,7 @@ function showDrawResult(){
 }
 
 function resetDraw(){
-  if(DRAW.timerInt){clearInterval(DRAW.timerInt);DRAW.timerInt=null;}
-  if(DRAW.highlightInt){clearTimeout(DRAW.highlightInt);DRAW.highlightInt=null;}
+  if(WHEEL_RAF){cancelAnimationFrame(WHEEL_RAF);WHEEL_RAF=null;}
   DRAW.names=DRAW.names.filter(function(n){return n!==DRAW.winner;});
   DRAW.winner=null;
   if(DRAW.names.length<2){
@@ -1135,6 +1182,7 @@ function resetDraw(){
   } else {
     document.getElementById('draw-result').style.display='none';
     document.getElementById('draw-machine').style.display='none';
+    document.getElementById('draw-wheel').style.display='none';
     document.getElementById('draw-input').style.display='flex';
     renderDrawList();
   }
