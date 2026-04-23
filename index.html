@@ -222,6 +222,50 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 .err{font-size:13px;color:#FF6B6B;text-align:center;margin-bottom:0.75rem;min-height:20px;}
 #card-canvas{display:none;}
 .source{font-size:11px;color:var(--muted2);text-align:center;margin-top:6px;font-style:italic;}
+
+/* ══ BARRE DE NAVIGATION ONGLETS ══ */
+.nav-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:rgba(7,7,15,0.95);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-top:1px solid rgba(255,255,255,0.08);
+  display:none; /* masquée sur s0 */
+  padding:6px 8px env(safe-area-inset-bottom,0px);
+}
+.nav-bar.visible{display:flex;}
+.nav-tabs{
+  display:flex;align-items:center;justify-content:space-around;
+  width:100%;max-width:520px;margin:0 auto;gap:4px;
+}
+.nav-tab{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:6px 4px;border-radius:12px;cursor:pointer;
+  border:none;background:transparent;
+  transition:all 0.2s;flex:1;position:relative;
+  -webkit-tap-highlight-color:transparent;
+}
+.nav-tab:active{transform:scale(0.92);}
+.nav-tab-icon{font-size:20px;line-height:1;transition:transform 0.2s;}
+.nav-tab-label{
+  font-family:'Barlow Condensed',sans-serif;font-size:10px;
+  font-weight:700;text-transform:uppercase;letter-spacing:0.06em;
+  color:rgba(242,242,240,0.35);transition:color 0.2s;
+  white-space:nowrap;
+}
+.nav-tab.active .nav-tab-label{color:var(--y);}
+.nav-tab.active .nav-tab-icon{transform:scale(1.15);}
+/* Indicateur actif */
+.nav-tab.active::before{
+  content:'';position:absolute;top:-6px;left:50%;
+  transform:translateX(-50%);
+  width:28px;height:3px;border-radius:0 0 3px 3px;
+  background:var(--y);
+}
+/* Lock sur les actes non encore atteints */
+.nav-tab.locked{opacity:0.3;cursor:default;}
+.nav-tab.locked:active{transform:none;}
+.nav-lock{position:absolute;top:3px;right:6px;font-size:9px;opacity:0.6;}
+
 </style>
 </head>
 <body>
@@ -247,7 +291,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
   <div class="notif-card"><div class="notif-dot"></div><div><p style="font-size:12px;color:var(--muted);margin-bottom:4px;">Il y a 2 min · Léa</p><p style="font-size:14px;font-weight:500;line-height:1.5;">Soirée chez moi ce soir 🎉 — T'es Sam ou pas ?</p></div></div>
   <div class="step-list">
     <div class="step-row" style="animation-delay:0.1s"><div class="step-num">1</div><div class="step-label"><p>Quiz identité</p><p>T'es quel type de Sam dans ton groupe ?</p></div></div>
-    <div class="step-row" style="animation-delay:0.17s"><div class="step-num">2</div><div class="step-label"><p>Sam au volant</p><p>Évite les obstacles, collecte les mocktails</p></div></div>
+    <div class="step-row" style="animation-delay:0.17s"><div class="step-num">2</div><div class="step-label"><p>Tirage au sort</p><p>La machine désigne le Sam de la soirée</p></div></div>
     <div class="step-row" style="animation-delay:0.24s"><div class="step-num">3</div><div class="step-label"><p>La soirée en images</p><p>4 situations — qu'est-ce que tu fais vraiment ?</p></div></div>
     <div class="step-row" style="animation-delay:0.31s"><div class="step-num">4</div><div class="step-label"><p>Le bar de Sam</p><p>10 ingrédients, 4 doses, tes combos font le score</p></div></div>
     <div class="step-row" style="animation-delay:0.38s"><div class="step-num">5</div><div class="step-label"><p>Ta carte Sam</p><p>Score, profil, mocktail signature</p></div></div>
@@ -279,45 +323,82 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 </div>
 
 
-<!-- S2: SAM AU VOLANT -->
+<!-- S2: TIRAGE AU SORT SAM -->
 <div class="screen" id="s2">
-  <div class="tag tc">Acte 2 — Sam au volant</div>
-  <div id="drive-intro" style="width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center;">
-    <div style="font-size:56px;text-align:center;margin-bottom:1rem;animation:fadeUp 0.4s ease both;">🚗</div>
-    <p style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;text-transform:uppercase;text-align:center;margin-bottom:0.5rem;animation:fadeUp 0.4s ease 0.1s both;">Sam au volant</p>
-    <p class="sub" style="animation:fadeUp 0.4s ease 0.2s both;margin-bottom:1.5rem;">Évite les obstacles, collecte les mocktails. Survive le plus longtemps possible !</p>
-    <div style="width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:1.5rem;animation:fadeUp 0.4s ease 0.3s both;">
-      <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px;font-size:13px;color:var(--muted);"><span style="font-size:20px;">⬅️➡️</span><span>Touches ou swipe pour changer de voie</span></div>
-      <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px;font-size:13px;color:var(--muted);"><span style="font-size:20px;">🍹</span><span>Mocktail = +10 pts et ralentit la vitesse</span></div>
-      <div style="display:flex;gap:12px;align-items:center;font-size:13px;color:var(--muted);"><span style="font-size:20px;">🚗</span><span>Voiture ivre = perd une vie (3 vies)</span></div>
+  <div class="tag tc">Acte 2 — Qui est Sam ce soir ?</div>
+
+  <!-- PHASE 1 : Saisie des prénoms -->
+  <div id="draw-input" style="width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center;">
+    <div style="font-size:52px;text-align:center;margin-bottom:1rem;animation:fadeUp 0.4s ease both;">🎰</div>
+    <p style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;text-transform:uppercase;text-align:center;margin-bottom:0.4rem;animation:fadeUp 0.4s ease 0.1s both;">Qui est dans le groupe ce soir ?</p>
+    <p class="sub" style="margin-bottom:1.5rem;animation:fadeUp 0.4s ease 0.2s both;">Ajoute les prénoms un par un — la machine désignera le Sam.</p>
+
+    <!-- Champ d'ajout -->
+    <div style="display:flex;gap:8px;width:100%;margin-bottom:1rem;animation:fadeUp 0.4s ease 0.3s both;">
+      <input id="draw-inp" class="inp" type="text" placeholder="Prénom…" maxlength="16" autocomplete="off"
+        style="margin:0;flex:1;font-size:18px;padding:13px 16px;"
+        onkeydown="if(event.key==='Enter')addDrawName()">
+      <button onclick="addDrawName()" style="background:var(--y);color:#000;border:none;border-radius:40px;padding:0 20px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;cursor:pointer;flex-shrink:0;text-transform:uppercase;">+</button>
     </div>
-    <button class="btn btn-y" onclick="startDriveGame()" style="animation:fadeUp 0.4s ease 0.4s both;">Démarrer →</button>
+    <p class="err" id="draw-err" style="margin-bottom:0.5rem;min-height:18px;"></p>
+
+    <!-- Liste des prénoms ajoutés -->
+    <div id="draw-list" style="width:100%;display:flex;flex-wrap:wrap;gap:8px;min-height:44px;margin-bottom:1.5rem;"></div>
+
+    <button class="btn btn-y" id="btn-draw-start" onclick="startDraw()" disabled style="opacity:0.35;">
+      Lancer le tirage →
+    </button>
   </div>
-  <div id="drive-game" style="display:none;width:100%;max-width:400px;flex-direction:column;align-items:center;">
-    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:0.75rem;">
-      <span style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted2);">Score</span>
-      <span style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--y);" id="drive-score-display">0</span>
-      <div id="drive-lives" style="font-size:20px;">❤️❤️❤️</div>
+
+  <!-- PHASE 2 : Machine à sous -->
+  <div id="draw-machine" style="display:none;width:100%;max-width:400px;flex-direction:column;align-items:center;">
+    <p style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:1.25rem;">Tirage en cours…</p>
+
+    <!-- Tambour machine à sous -->
+    <div style="position:relative;width:100%;display:flex;justify-content:center;margin-bottom:1.5rem;">
+      <!-- Lignes de repère -->
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--y),transparent);z-index:2;"></div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--y),transparent);z-index:2;"></div>
+      <!-- Flèches latérales -->
+      <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:20px;z-index:3;color:var(--y);">▶</div>
+      <div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:20px;z-index:3;color:var(--y);">◀</div>
+      <!-- Fenêtre du tambour -->
+      <div style="width:240px;height:82px;overflow:hidden;border:2px solid var(--y);border-radius:12px;background:var(--s1);box-shadow:0 0 30px rgba(255,207,0,0.2);position:relative;">
+        <div id="draw-reel" style="position:absolute;left:0;right:0;top:0;will-change:transform;"></div>
+      </div>
     </div>
-    <div id="drive-canvas-wrap" style="width:360px;height:500px;border-radius:16px;overflow:hidden;position:relative;">
-      <canvas id="drive-canvas" style="display:block;touch-action:none;width:360px;height:500px;"></canvas>
-    </div>
-    <p style="font-size:12px;color:var(--muted2);text-align:center;margin-top:8px;">⬅ ➡ ou swipe pour changer de voie</p>
+
+    <p id="draw-suspense" style="font-size:13px;color:var(--muted2);font-style:italic;text-align:center;min-height:20px;"></p>
   </div>
-  <div id="drive-over" style="display:none;width:100%;max-width:400px;flex-direction:column;align-items:center;">
-    <div style="font-size:64px;text-align:center;margin-bottom:1rem;animation:bounceIn 0.5s ease both;">💥</div>
-    <p style="font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;text-transform:uppercase;color:var(--y);text-align:center;margin-bottom:0.5rem;">Game Over</p>
-    <p style="font-size:14px;color:var(--muted);text-align:center;margin-bottom:1.5rem;">Un conducteur ivre t'a eu !</p>
-    <div style="background:var(--s2);border:2px solid var(--y);border-radius:var(--r);padding:1.5rem;text-align:center;width:100%;margin-bottom:1.5rem;">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:6px;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Ton score</p>
-      <p style="font-family:'Barlow Condensed',sans-serif;font-size:56px;font-weight:900;color:var(--y);" id="drive-final-score">0</p>
-      <p style="font-size:12px;color:var(--muted);margin-top:4px;" id="drive-final-msg"></p>
+
+  <!-- PHASE 3 : Résultat -->
+  <div id="draw-result" style="display:none;width:100%;max-width:400px;flex-direction:column;align-items:center;">
+    <div style="font-size:18px;font-weight:600;color:var(--muted);text-align:center;margin-bottom:0.75rem;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.08em;">Ce soir, le Sam c'est</div>
+
+    <!-- Carte résultat -->
+    <div style="width:100%;background:var(--s2);border:3px solid var(--y);border-radius:20px;padding:2rem 1.5rem;text-align:center;margin-bottom:1.5rem;position:relative;overflow:hidden;box-shadow:0 0 60px rgba(255,207,0,0.15);">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--m),var(--y),var(--c));"></div>
+      <!-- Logo SAM -->
+      <div style="display:flex;justify-content:center;margin-bottom:1rem;">
+        <svg width="56" height="56" viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="46" fill="white" stroke="black" stroke-width="5.5"/>
+          <circle cx="33" cy="42" r="13.5" fill="none" stroke="black" stroke-width="5"/>
+          <circle cx="33" cy="42" r="3.3" fill="black"/>
+          <circle cx="62" cy="42" r="13.5" fill="none" stroke="black" stroke-width="5"/>
+          <circle cx="62" cy="42" r="3.3" fill="black"/>
+          <path d="M 37 67 A 26 26 0 0 0 63 67" fill="none" stroke="black" stroke-width="5" stroke-linecap="square"/>
+        </svg>
+      </div>
+      <div id="draw-winner-name" style="font-family:'Barlow Condensed',sans-serif;font-size:clamp(42px,12vw,64px);font-weight:900;color:var(--y);line-height:1;text-transform:uppercase;letter-spacing:-0.02em;margin-bottom:0.5rem;animation:stampIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both;"></div>
+      <div style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:1rem;" id="draw-winner-msg"></div>
+      <div style="display:inline-block;background:var(--y);color:#000;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:900;padding:5px 16px;border-radius:40px;letter-spacing:0.1em;text-transform:uppercase;">SAM DE LA SOIRÉE</div>
     </div>
-    <p style="font-size:12px;color:var(--muted2);text-align:center;margin-bottom:1rem;font-style:italic;">Score ÷ 10 = points ajoutés à ton Sam Score</p>
-    <button class="btn btn-y" onclick="transition('s3','Acte 3','Le chiffre qui change tout')">Continuer →</button>
-    <button class="btn btn-g" onclick="restartDriveGame()">Rejouer</button>
+
+    <button class="btn btn-g" onclick="resetDraw()" style="margin-bottom:0.5rem;">Retirer un autre nom</button>
+    <button class="btn btn-y" onclick="transition('s3','Acte 3','La soirée en images')">Continuer →</button>
   </div>
 </div>
+
 <!-- S3: SITUATIONS -->
 <div class="screen" id="s3">
   <div class="tag tm">Acte 3 — La soirée en images</div>
@@ -402,9 +483,13 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
   <p class="copied" id="copied" style="opacity:0;margin-bottom:0.5rem;"></p>
   <button class="btn btn-o" onclick="restart()" style="animation:fadeUp 0.4s ease 0.5s both;">Rejouer</button>
 </div>
+
+<!-- BARRE DE NAVIGATION -->
+<nav class="nav-bar" id="nav-bar">
+  <div class="nav-tabs" id="nav-tabs"></div>
+</nav>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 /* ══ DATA QUIZ ══ */
 /* Banque de 15 questions — 5 tirées aléatoirement à chaque session */
@@ -521,11 +606,73 @@ var SAM_TYPES=[
 
 /* ══ STATE ══ */
 var S={
-  prenom:'',qScore:0,sitScore:0,mockScore:0,driveScore:0,
+  prenom:'',qScore:0,sitScore:0,mockScore:0,
   selIngs:[],activeCat:'bases',mockBonusScore:0,mockBaseScore:0,mocktailName:'',
   qIdx:0,sitIdx:0,sitAnswers:[],timerInt:null,
   prof:{protecteur:0,diplomate:0,logisticien:0,discret:0,libre:0}
 };
+
+
+/* ══ NAVIGATION PAR ONGLETS ══ */
+var NAV_ACTES = [
+  {id:'s1', label:'Quiz',       emoji:'🧠', unlocked:false},
+  {id:'s2', label:'Tirage',     emoji:'🎰', unlocked:false},
+  {id:'s3', label:'Situations', emoji:'🎭', unlocked:false},
+  {id:'s4', label:'Bar',        emoji:'🍹', unlocked:false},
+  {id:'s5', label:'Carte',      emoji:'⭐', unlocked:false},
+];
+
+function unlockNav(screenId){
+  NAV_ACTES.forEach(function(a){
+    if(a.id===screenId) a.unlocked=true;
+  });
+  renderNavBar();
+}
+
+function renderNavBar(){
+  var el=document.getElementById('nav-tabs');
+  if(!el) return;
+  el.innerHTML='';
+  NAV_ACTES.forEach(function(a){
+    var btn=document.createElement('button');
+    btn.className='nav-tab'+(a.unlocked?' ':' locked')+
+      (document.querySelector('.screen.active') && document.querySelector('.screen.active').id===a.id?' active':'');
+    btn.innerHTML=
+      '<span class="nav-tab-icon">'+a.emoji+'</span>'+
+      '<span class="nav-tab-label">'+a.label+'</span>'+
+      (a.unlocked?'':'<span class="nav-lock">🔒</span>');
+    if(a.unlocked){
+      (function(act){
+        btn.addEventListener('click',function(){
+          if(document.querySelector('.screen.active').id===act.id) return;
+          showScreenDirect(act.id);
+        });
+      })(a);
+    }
+    el.appendChild(btn);
+  });
+}
+
+/* Naviguer directement vers un acte sans animation (depuis l'onglet) */
+function showScreenDirect(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  /* Réinitialiser l'acte si nécessaire */
+  if(id==='s1')initQuiz();
+  else if(id==='s2')initDrawScreen();
+  else if(id==='s3')initSituations();
+  else if(id==='s4')initBar();
+  else if(id==='s5')initResults();
+  renderNavBar();
+}
+
+function showNavBar(){
+  document.getElementById('nav-bar').classList.add('visible');
+}
+function hideNavBar(){
+  document.getElementById('nav-bar').classList.remove('visible');
+}
 
 /* ══ PARTICULES ══ */
 var pCv=document.getElementById('pcv'),pCtx=pCv.getContext('2d'),parts=[];
@@ -550,7 +697,7 @@ function showScreen(id){
   document.getElementById(id).classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
   if(id==='s1')initQuiz();
-  if(id==='s2')initDriveScreen();
+  if(id==='s2')initDrawScreen();
   if(id==='s3')initSituations();
   if(id==='s3')initSituations();
   if(id==='s4')initBar();
@@ -563,6 +710,10 @@ function startApp(){
   if(!v){document.getElementById('err0').textContent='Entre ton prénom pour commencer.';return;}
   document.getElementById('err0').textContent='';
   S.prenom=v;
+  /* Réinitialiser les verrous */
+  NAV_ACTES.forEach(function(a){a.unlocked=false;});
+  unlockNav('s1');
+  showNavBar();
   transition('s1','Acte 1','Quiz identité');
 }
 document.getElementById('inp-prenom').addEventListener('keydown',function(e){if(e.key==='Enter')startApp();});
@@ -603,583 +754,209 @@ function pickOpt(idx,btn,pts,prof){
   if(pts>=12)flashScore('+'+pts);
   setTimeout(advanceQ,900);
 }
-function advanceQ(){if(S.qIdx+1>=QUIZ.length)transition('s2','Acte 2','Sam au volant');else{S.qIdx++;renderQ();}}
+function advanceQ(){if(S.qIdx+1>=QUIZ.length)transition('s2','Acte 2','Qui est Sam ce soir ?');else{S.qIdx++;renderQ();}}
 function animScore(from,to,elId,suf){var el=document.getElementById(elId),t0=performance.now(),dur=400;function st(ts){var p=Math.min((ts-t0)/dur,1);el.textContent=Math.round(from+p*(to-from))+(suf||'');el.style.transform=p<1?'scale(1.15)':'scale(1)';if(p<1)requestAnimationFrame(st);else el.style.transform='scale(1)';}requestAnimationFrame(st);}
 function flashScore(text){var el=document.getElementById('score-flash');el.textContent=text;el.style.color='var(--y)';el.style.opacity='0';el.style.transform='translate(-50%,-50%) scale(0.5)';var t0=performance.now();function si(ts){var p=Math.min((ts-t0)/150,1);el.style.opacity=p;el.style.transform='translate(-50%,-50%) scale('+(0.5+p*0.8)+')';if(p<1){requestAnimationFrame(si);}else{setTimeout(function(){var t1=performance.now();function fo(ts2){var p2=Math.min((ts2-t1)/300,1);el.style.opacity=1-p2;if(p2<1)requestAnimationFrame(fo);}requestAnimationFrame(fo);},400);}}requestAnimationFrame(si);}
 
 
-/* ══ SAM AU VOLANT — 3D (Three.js) ══ */
-var LANE_POS = [60, 180, 300]; /* positions logiques X pour collisions */
-var LANE_Z   = [-1.8, 0, 1.8]; /* positions Z Three.js (gauche→droite) */
-
-var DG = {
-  renderer:null, scene:null, camera:null, raf:null, running:false,
-  lane:1, targetLane:1, carZ:0, carZvel:0,
-  speed:0.14, maxSpeed:0.55, frame:0, score:0, lives:3,
-  objects:[], spawnTimer:0, spawnInterval:55, invincible:0, touchStartX:0,
-  level:1, nextLevelFrame:400,
-  /* meshes */
-  samCar:null, roadLines:[], roadStripes:[],
-  shield:null, shieldActive:false,
-  /* road scroll */
-  roadOffset:0,
-  wheelFL:null,wheelFR:null,wheelRL:null,wheelRR:null
+/* ══ TIRAGE AU SORT SAM ══ */
+var DRAW = {
+  names: [],       /* liste des prénoms saisis */
+  winner: null,
+  spinning: false
 };
 
-function initDriveScreen(){
-  document.getElementById('drive-intro').style.display='flex';
-  document.getElementById('drive-game').style.display='none';
-  document.getElementById('drive-over').style.display='none';
-  S.driveScore=0;
-  /* Nettoyer Three.js si déjà initialisé */
-  if(DG.renderer){ DG.renderer.dispose(); DG.renderer=null; }
+var DRAW_MSGS = [
+  'Ce soir, tu ramènes tout le monde à la maison. 🏠',
+  'Ta bande peut compter sur toi. 🤝',
+  'Tu es le héros discret de cette soirée. ⭐',
+  'Sam pour une nuit, héros pour toujours. 👑',
+  'La route te remercie. Tes potes aussi. 🛣️'
+];
+
+function initDrawScreen(){
+  DRAW.names = [];
+  DRAW.winner = null;
+  DRAW.spinning = false;
+  document.getElementById('draw-input').style.display  = 'flex';
+  document.getElementById('draw-machine').style.display = 'none';
+  document.getElementById('draw-result').style.display  = 'none';
+  document.getElementById('draw-list').innerHTML = '';
+  document.getElementById('draw-inp').value = '';
+  document.getElementById('draw-err').textContent = '';
+  document.getElementById('btn-draw-start').disabled = true;
+  document.getElementById('btn-draw-start').style.opacity = '0.35';
 }
 
-function startDriveGame(){
-  document.getElementById('drive-intro').style.display='none';
-  document.getElementById('drive-game').style.display='flex';
-  document.getElementById('drive-over').style.display='none';
-
-  /* Reset état */
-  DG.lane=1; DG.targetLane=1; DG.carZ=LANE_Z[1]; DG.carZvel=0;
-  DG.speed=0.12; DG.frame=0; DG.score=0; DG.lives=3;
-  DG.objects=[]; DG.spawnTimer=0; DG.spawnInterval=55; DG.invincible=0; DG.level=1; DG.nextLevelFrame=400;
-  DG.roadOffset=0; DG.running=true;
-
-  updateDriveLives();
-  document.getElementById('drive-score-display').textContent='0';
-
-  /* Assigner DG.canvas AVANT tout */
-  DG.canvas = document.getElementById('drive-canvas');
-
-  initThree();
-
-  DG.canvas.addEventListener('touchstart', onDriveTouchStart, {passive:true});
-  DG.canvas.addEventListener('touchend',   onDriveTouchEnd,   {passive:true});
-  document.addEventListener('keydown', onDriveKey);
-
-  if(DG.raf) cancelAnimationFrame(DG.raf);
-  driveLoop();
+function addDrawName(){
+  var val = document.getElementById('draw-inp').value.trim();
+  var err = document.getElementById('draw-err');
+  if(!val){ err.textContent = 'Entre un prénom.'; return; }
+  if(DRAW.names.includes(val)){ err.textContent = val + ' est déjà dans la liste.'; return; }
+  if(DRAW.names.length >= 10){ err.textContent = 'Maximum 10 personnes.'; return; }
+  err.textContent = '';
+  DRAW.names.push(val);
+  document.getElementById('draw-inp').value = '';
+  document.getElementById('draw-inp').focus();
+  renderDrawList();
 }
 
-/* ── INIT THREE.JS ── */
-function initThree(){
-  var W=360, H=500;
-
-  /* Renderer */
-  DG.renderer = new THREE.WebGLRenderer({canvas: DG.canvas, antialias:true});
-  DG.renderer.setSize(W, H);
-  DG.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  DG.renderer.shadowMap.enabled = true;
-  DG.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-  /* Scene */
-  DG.scene = new THREE.Scene();
-  DG.scene.background = new THREE.Color(0x07070F);
-  DG.scene.fog = new THREE.Fog(0x07070F, 18, 35);
-
-  /* Camera — vue plongeante à 45° */
-  DG.camera = new THREE.PerspectiveCamera(55, W/H, 0.1, 100);
-  DG.camera.position.set(0, 7, 8);
-  DG.camera.lookAt(0, 0, -4);
-
-  /* Lumières */
-  var ambient = new THREE.AmbientLight(0xffffff, 0.5);
-  DG.scene.add(ambient);
-
-  var sun = new THREE.DirectionalLight(0xffffff, 1.2);
-  sun.position.set(3, 10, 5);
-  sun.castShadow = true;
-  sun.shadow.mapSize.set(512,512);
-  DG.scene.add(sun);
-
-  /* Phares de la voiture SAM */
-  var headlight = new THREE.SpotLight(0xFFEF88, 2, 12, Math.PI/6, 0.5);
-  headlight.position.set(0, 3, 6);
-  headlight.target.position.set(0, 0, -2);
-  DG.scene.add(headlight);
-  DG.scene.add(headlight.target);
-
-  /* Route */
-  buildRoad();
-
-  /* Voiture SAM */
-  DG.samCar = buildSamCar();
-  DG.samCar.position.set(LANE_Z[1], 0.45, 3.5);
-  DG.scene.add(DG.samCar);
-
-  /* Avatar SAM sur le toit */
-  var avatar = buildSamAvatar();
-  avatar.position.set(0, 1.05, -0.1); /* sur le toit */
-  DG.samCar.add(avatar);
-  DG.samCar.userData.avatar = avatar;
-
-  /* Bouclier (ring) */
-  var shieldGeo = new THREE.TorusGeometry(1.1, 0.06, 8, 32);
-  var shieldMat = new THREE.MeshBasicMaterial({color:0xFFCF00, transparent:true, opacity:0.7});
-  DG.shield = new THREE.Mesh(shieldGeo, shieldMat);
-  DG.shield.rotation.x = Math.PI/2;
-  DG.shield.visible = false;
-  DG.samCar.add(DG.shield);
+function removeDrawName(name){
+  DRAW.names = DRAW.names.filter(function(n){ return n !== name; });
+  renderDrawList();
 }
 
-/* ── ROUTE ── */
-function buildRoad(){
-  /* Asphalte */
-  var roadGeo = new THREE.PlaneGeometry(6.5, 80);
-  var roadMat = new THREE.MeshLambertMaterial({color:0x181828});
-  var road = new THREE.Mesh(roadGeo, roadMat);
-  road.rotation.x = -Math.PI/2;
-  road.position.y = -0.01;
-  road.receiveShadow = true;
-  DG.scene.add(road);
+function renderDrawList(){
+  var el = document.getElementById('draw-list');
+  el.innerHTML = '';
+  DRAW.names.forEach(function(name){
+    var tag = document.createElement('div');
+    tag.style.cssText = 'display:inline-flex;align-items:center;gap:6px;background:var(--s2);border:1.5px solid var(--border2);border-radius:40px;padding:6px 12px 6px 14px;font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:var(--text);animation:fadeUp 0.25s ease both;';
+    var nameSpan = document.createElement('span');
+    nameSpan.textContent = name;
+    tag.appendChild(nameSpan);
+    var delBtn = document.createElement('button');
+    delBtn.textContent = '\u00d7';
+    delBtn.style.cssText = 'background:rgba(255,79,79,0.15);border:none;border-radius:50%;width:18px;height:18px;cursor:pointer;color:#FF6B6B;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;';
+    (function(n){ delBtn.addEventListener('click', function(){ removeDrawName(n); }); })(name);
+    tag.appendChild(delBtn);
+    el.appendChild(tag);
+  });
+  var btn = document.getElementById('btn-draw-start');
+  btn.disabled = DRAW.names.length < 2;
+  btn.style.opacity = DRAW.names.length < 2 ? '0.35' : '1';
+}
 
-  /* Bandes latérales jaunes */
-  [-3.15, 3.15].forEach(function(zx){
-    var bGeo = new THREE.PlaneGeometry(0.18, 80);
-    var bMat = new THREE.MeshBasicMaterial({color:0xFFCF00, transparent:true, opacity:0.6});
-    var b = new THREE.Mesh(bGeo, bMat);
-    b.rotation.x = -Math.PI/2;
-    b.position.set(zx, 0.005, 0);
-    DG.scene.add(b);
+function startDraw(){
+  if(DRAW.names.length < 2 || DRAW.spinning) return;
+  DRAW.spinning = true;
+
+  /* Passer à la phase machine */
+  document.getElementById('draw-input').style.display   = 'none';
+  document.getElementById('draw-machine').style.display = 'flex';
+
+  /* Choisir le gagnant maintenant (mais révéler après l'animation) */
+  DRAW.winner = DRAW.names[Math.floor(Math.random() * DRAW.names.length)];
+
+  /* Construire le tambour : liste longue qui se termine sur le gagnant */
+  var reel = document.getElementById('draw-reel');
+  reel.innerHTML = '';
+
+  /* Hauteur de chaque item */
+  var itemH = 82;
+
+  /* Générer une longue séquence aléatoire + le gagnant en dernière position */
+  var sequence = [];
+  var totalItems = 28 + Math.floor(Math.random() * 8); /* 28-35 items */
+  for(var i = 0; i < totalItems - 1; i++){
+    sequence.push(DRAW.names[Math.floor(Math.random() * DRAW.names.length)]);
+  }
+  sequence.push(DRAW.winner); /* toujours finir sur le gagnant */
+
+  /* Remplir le DOM */
+  sequence.forEach(function(name, idx){
+    var item = document.createElement('div');
+    item.style.cssText = 'height:' + itemH + 'px;display:flex;align-items:center;justify-content:center;' +
+      'font-family:Barlow Condensed,sans-serif;font-size:28px;font-weight:900;text-transform:uppercase;' +
+      'letter-spacing:0.02em;color:' + (idx === sequence.length-1 ? '#FFCF00' : 'rgba(242,242,240,0.6)') + ';';
+    item.textContent = name;
+    reel.appendChild(item);
   });
 
-  /* Lignes de voie pointillées (groupes de segments) */
-  DG.roadStripes = [];
-  [-1.05, 1.05].forEach(function(zx){
-    var group = new THREE.Group();
-    for(var i=0; i<20; i++){
-      var sGeo = new THREE.PlaneGeometry(0.08, 1.2);
-      var sMat = new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.25});
-      var s = new THREE.Mesh(sGeo, sMat);
-      s.rotation.x = -Math.PI/2;
-      s.position.set(zx, 0.006, -i*3.5);
-      group.add(s);
+  /* Position finale : dernier item centré dans la fenêtre */
+  var finalY = -(sequence.length - 1) * itemH;
+
+  /* Animation CSS via requestAnimationFrame avec easing custom */
+  var startTime = null;
+  var duration  = 3200; /* ms */
+  var startPos  = 0;
+  var endPos    = finalY;
+
+  /* Messages de suspense */
+  var msgs = ['Consultation des étoiles…','Le destin hésite…','Presque…','C\u2019est lui\u2026 ou elle\u2026','Le verdict tombe !'];
+  var msgEl = document.getElementById('draw-suspense');
+  var msgIdx = 0;
+  var msgInterval = setInterval(function(){
+    msgEl.textContent = msgs[Math.min(msgIdx, msgs.length-1)];
+    msgIdx++;
+    if(msgIdx >= msgs.length) clearInterval(msgInterval);
+  }, duration / msgs.length);
+
+  function easeOutQuart(t){ return 1 - Math.pow(1-t, 4); }
+
+  function animate(ts){
+    if(!startTime) startTime = ts;
+    var elapsed = ts - startTime;
+    var progress = Math.min(elapsed / duration, 1);
+    var eased = easeOutQuart(progress);
+    var currentY = startPos + (endPos - startPos) * eased;
+    reel.style.transform = 'translateY(' + currentY + 'px)';
+
+    if(progress < 1){
+      requestAnimationFrame(animate);
+    } else {
+      /* Arrivée — petit rebond */
+      reel.style.transition = 'transform 0.18s cubic-bezier(0.34,1.56,0.64,1)';
+      reel.style.transform = 'translateY(' + (finalY + 8) + 'px)';
+      setTimeout(function(){
+        reel.style.transform = 'translateY(' + finalY + 'px)';
+      }, 180);
+
+      clearInterval(msgInterval);
+      msgEl.textContent = '';
+
+      /* Révéler le résultat */
+      setTimeout(showDrawResult, 400);
     }
-    DG.scene.add(group);
-    DG.roadStripes.push({group:group, zx:zx});
-  });
-
-  /* Bordures de route */
-  [-3.5, 3.5].forEach(function(zx){
-    var cGeo = new THREE.BoxGeometry(0.3, 0.2, 80);
-    var cMat = new THREE.MeshLambertMaterial({color:0x0d0d1a});
-    var curb = new THREE.Mesh(cGeo, cMat);
-    curb.position.set(zx, 0.1, 0);
-    DG.scene.add(curb);
-  });
+  }
+  requestAnimationFrame(animate);
 }
 
-/* ── VOITURE SAM ── */
-function buildSamCar(){
-  var group = new THREE.Group();
+function showDrawResult(){
+  document.getElementById('draw-machine').style.display = 'none';
+  document.getElementById('draw-result').style.display  = 'flex';
+  document.getElementById('draw-winner-name').textContent = DRAW.winner;
+  document.getElementById('draw-winner-msg').textContent  = DRAW_MSGS[Math.floor(Math.random() * DRAW_MSGS.length)];
+  DRAW.spinning = false;
 
-  /* Carrosserie */
-  var bodyGeo = new THREE.BoxGeometry(1.6, 0.5, 2.8);
-  var bodyMat = new THREE.MeshLambertMaterial({color:0xFFCF00});
-  var body = new THREE.Mesh(bodyGeo, bodyMat);
-  body.position.y = 0.35;
-  body.castShadow = true;
-  group.add(body);
-
-  /* Toit */
-  var roofGeo = new THREE.BoxGeometry(1.3, 0.42, 1.6);
-  var roofMat = new THREE.MeshLambertMaterial({color:0xE6B800});
-  var roof = new THREE.Mesh(roofGeo, roofMat);
-  roof.position.set(0, 0.81, -0.1);
-  group.add(roof);
-
-  /* Pare-brise (bleu foncé) */
-  var windGeo = new THREE.BoxGeometry(1.25, 0.35, 0.06);
-  var windMat = new THREE.MeshLambertMaterial({color:0x003366, transparent:true, opacity:0.7});
-  var wind = new THREE.Mesh(windGeo, windMat);
-  wind.position.set(0, 0.82, 0.71);
-  group.add(wind);
-
-  /* Logo SAM (visage blanc) sur le capot */
-  var faceGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.05, 16);
-  var faceMat = new THREE.MeshLambertMaterial({color:0xffffff});
-  var face = new THREE.Mesh(faceGeo, faceMat);
-  face.position.set(0, 0.63, 0.9);
-  group.add(face);
-
-  /* Yeux SAM */
-  var eyeGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.06, 10);
-  var eyeMat = new THREE.MeshBasicMaterial({color:0x000000});
-  [-0.1, 0.1].forEach(function(ez){
-    var eye = new THREE.Mesh(eyeGeo, eyeMat);
-    eye.position.set(0.08, 0.67, 0.9+ez);
-    group.add(eye);
-  });
-
-  /* Phares avant */
-  var lightGeo = new THREE.BoxGeometry(0.28, 0.12, 0.06);
-  var lightMat = new THREE.MeshBasicMaterial({color:0xFFEF88});
-  [-0.55, 0.55].forEach(function(lx){
-    var light = new THREE.Mesh(lightGeo, lightMat);
-    light.position.set(lx, 0.35, 1.43);
-    group.add(light);
-    /* Halo point light */
-    var pl = new THREE.PointLight(0xFFEF88, 0.6, 3);
-    pl.position.set(lx, 0.35, 1.5);
-    group.add(pl);
-  });
-
-  /* Feux arrière rouges */
-  var rearMat = new THREE.MeshBasicMaterial({color:0xFF2222});
-  [-0.55, 0.55].forEach(function(lx){
-    var rear = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.1, 0.05), rearMat);
-    rear.position.set(lx, 0.35, -1.43);
-    group.add(rear);
-  });
-
-  /* Roues */
-  var wheelGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.22, 14);
-  var wheelMat = new THREE.MeshLambertMaterial({color:0x111111});
-  var wheelPositions = [[-0.9,0.28,0.95],[ 0.9,0.28,0.95],[-0.9,0.28,-0.95],[ 0.9,0.28,-0.95]];
-  var wheels = [];
-  wheelPositions.forEach(function(wp){
-    var w = new THREE.Mesh(wheelGeo, wheelMat);
-    w.rotation.z = Math.PI/2;
-    w.position.set(wp[0], wp[1], wp[2]);
-    group.add(w);
-    wheels.push(w);
-  });
-  group.userData.wheels = wheels;
-
-  return group;
-}
-
-/* ── AVATAR SAM 3D ── */
-function buildSamAvatar(){
-  var group = new THREE.Group();
-
-  /* Corps */
-  var bodyGeo = new THREE.BoxGeometry(0.32, 0.38, 0.2);
-  var bodyMat = new THREE.MeshLambertMaterial({color:0x00B0FF}); /* bleu SAM */
-  var body = new THREE.Mesh(bodyGeo, bodyMat);
-  body.position.y = 0.19;
-  group.add(body);
-
-  /* Tête — sphère blanche (logo SAM) */
-  var headGeo = new THREE.SphereGeometry(0.18, 14, 14);
-  var headMat = new THREE.MeshLambertMaterial({color:0xffffff});
-  var head = new THREE.Mesh(headGeo, headMat);
-  head.position.y = 0.53;
-  group.add(head);
-
-  /* Contour tête (cercle noir) */
-  var ringGeo = new THREE.TorusGeometry(0.18, 0.022, 8, 24);
-  var ringMat = new THREE.MeshBasicMaterial({color:0x000000});
-  var ring = new THREE.Mesh(ringGeo, ringMat);
-  ring.position.y = 0.53;
-  group.add(ring);
-
-  /* Œil gauche — cercle */
-  var eOutGeo = new THREE.TorusGeometry(0.055, 0.016, 6, 16);
-  var eOutMat = new THREE.MeshBasicMaterial({color:0x000000});
-
-  /* Œil gauche */
-  var eL = new THREE.Mesh(eOutGeo, eOutMat);
-  eL.position.set(-0.065, 0.555, 0.16);
-  group.add(eL);
-  var eLp = new THREE.Mesh(new THREE.SphereGeometry(0.022,8,8), new THREE.MeshBasicMaterial({color:0x000000}));
-  eLp.position.set(-0.065, 0.555, 0.175);
-  group.add(eLp);
-
-  /* Œil droit */
-  var eR = new THREE.Mesh(eOutGeo, eOutMat);
-  eR.position.set(0.065, 0.555, 0.16);
-  group.add(eR);
-  var eRp = new THREE.Mesh(new THREE.SphereGeometry(0.022,8,8), new THREE.MeshBasicMaterial({color:0x000000}));
-  eRp.position.set(0.065, 0.555, 0.175);
-  group.add(eRp);
-
-  /* Sourire — arc de tore */
-  var smileGeo = new THREE.TorusGeometry(0.06, 0.014, 6, 12, Math.PI);
-  var smileMat = new THREE.MeshBasicMaterial({color:0x000000});
-  var smile = new THREE.Mesh(smileGeo, smileMat);
-  smile.position.set(0, 0.495, 0.165);
-  smile.rotation.z = Math.PI; /* arc vers le bas = sourire */
-  group.add(smile);
-
-  /* Bras gauche */
-  var armGeo = new THREE.BoxGeometry(0.1, 0.28, 0.1);
-  var armMat = new THREE.MeshLambertMaterial({color:0x0090DD});
-  var armL = new THREE.Mesh(armGeo, armMat);
-  armL.position.set(-0.22, 0.18, 0);
-  armL.rotation.z = 0.3;
-  group.add(armL);
-  group.userData.armL = armL;
-
-  /* Bras droit */
-  var armR = new THREE.Mesh(armGeo, armMat);
-  armR.position.set(0.22, 0.18, 0);
-  armR.rotation.z = -0.3;
-  group.add(armR);
-  group.userData.armR = armR;
-
-  /* Jambes */
-  var legGeo = new THREE.BoxGeometry(0.11, 0.22, 0.12);
-  var legMat = new THREE.MeshLambertMaterial({color:0x0D0D1A});
-  [-0.08, 0.08].forEach(function(lx){
-    var leg = new THREE.Mesh(legGeo, legMat);
-    leg.position.set(lx, -0.02, 0);
-    group.add(leg);
-  });
-
-  return group;
-}
-
-/* ── OBSTACLES & BONUS ── */
-function buildObstacle(type){
-  var group = new THREE.Group();
-
-  if(type==='car'){
-    /* Voiture ivre rouge */
-    var bMat = new THREE.MeshLambertMaterial({color:0xCC2222});
-    var body = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.45, 2.6), bMat);
-    body.position.y=0.32; body.castShadow=true; group.add(body);
-    var roof = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.38, 1.4), new THREE.MeshLambertMaterial({color:0x991111}));
-    roof.position.set(0,0.73,-0.1); group.add(roof);
-    var wMat = new THREE.MeshLambertMaterial({color:0x111111});
-    [[-0.85,0.28,0.85],[0.85,0.28,0.85],[-0.85,0.28,-0.85],[0.85,0.28,-0.85]].forEach(function(wp){
-      var w=new THREE.Mesh(new THREE.CylinderGeometry(0.26,0.26,0.2,12),wMat);w.rotation.z=Math.PI/2;w.position.set(wp[0],wp[1],wp[2]);group.add(w);
-    });
-    /* Emoji 🍺 comme sprite billboard */
-    group.userData.wobble = true;
-
-  } else if(type==='mocktail'){
-    /* Mocktail — sphère cyan brillante */
-    var mGeo = new THREE.SphereGeometry(0.38, 12, 12);
-    var mMat = new THREE.MeshLambertMaterial({color:0x00B0FF, emissive:0x003355});
-    var sphere = new THREE.Mesh(mGeo, mMat);
-    sphere.position.y = 0.6;
-    group.add(sphere);
-    /* Halo */
-    var halo = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 8), new THREE.MeshBasicMaterial({color:0x00B0FF, transparent:true, opacity:0.18, wireframe:false}));
-    halo.position.y = 0.6;
-    group.add(halo);
-    group.userData.spin = true;
-    group.userData.float = true;
-
-  } else if(type==='star'){
-    /* Étoile SAM — octaèdre jaune */
-    var sGeo = new THREE.OctahedronGeometry(0.42);
-    var sMat = new THREE.MeshLambertMaterial({color:0xFFCF00, emissive:0x443300});
-    var star = new THREE.Mesh(sGeo, sMat);
-    star.position.y = 0.65;
-    group.add(star);
-    var sHalo = new THREE.Mesh(new THREE.SphereGeometry(0.6,8,8), new THREE.MeshBasicMaterial({color:0xFFCF00, transparent:true, opacity:0.12}));
-    sHalo.position.y = 0.65;
-    group.add(sHalo);
-    group.userData.spin = true;
-    group.userData.float = true;
-
-  } else {
-    /* Bouteille — cylindre rouge-rose */
-    var btGeo = new THREE.CylinderGeometry(0.14, 0.18, 0.8, 10);
-    var btMat = new THREE.MeshLambertMaterial({color:0xDC143C, transparent:true, opacity:0.85});
-    var bottle = new THREE.Mesh(btGeo, btMat);
-    bottle.position.y = 0.55;
-    group.add(bottle);
-    var capGeo = new THREE.CylinderGeometry(0.06, 0.08, 0.18, 8);
-    var cap = new THREE.Mesh(capGeo, new THREE.MeshLambertMaterial({color:0xFFD700}));
-    cap.position.y = 1.05;
-    group.add(cap);
-    group.userData.wobble = true;
-  }
-
-  return group;
-}
-
-/* ── BOUCLE DE JEU ── */
-function driveLoop(){
-  if(!DG.running) return;
-  DG.frame++;
-
-  /* Score passif */
-  DG.score += Math.floor(DG.speed * 3 * (1 + DG.level * 0.05));
-  document.getElementById('drive-score-display').textContent = DG.score;
-
-  /* Accélération progressive par paliers — chaque niveau = +vitesse +fréquence spawn */
-  if(DG.frame >= DG.nextLevelFrame && DG.speed < DG.maxSpeed){
-    DG.level++;
-    /* Vitesse : +8% par niveau, plafonné à maxSpeed */
-    DG.speed = Math.min(DG.maxSpeed, Math.round(DG.speed * 1.08 * 1000)/1000);
-    /* Spawn plus fréquent mais jamais inférieur à 22 frames */
-    DG.spawnInterval = Math.max(22, DG.spawnInterval - 3);
-    /* Prochain palier de plus en plus long (courbe douce) */
-    DG.nextLevelFrame = DG.frame + Math.max(200, 400 - DG.level * 20);
-    /* Flash niveau */
-    driveFlash('Niveau ' + DG.level + ' 🔥');
-  }
-
-  /* Spawn */
-  DG.spawnTimer++;
-  if(DG.spawnTimer >= DG.spawnInterval){
-    spawnDriveObj3D();
-    DG.spawnTimer = 0;
-    DG.spawnInterval = Math.max(28, DG.spawnInterval - 0.4);
-  }
-
-  /* Mouvement voiture — lerp Z */
-  var targetZ = LANE_Z[DG.targetLane];
-  var diff = targetZ - DG.carZ;
-  if(Math.abs(diff) < 0.01){
-    DG.carZ = targetZ;
-    DG.lane = DG.targetLane;
-  } else {
-    DG.carZ += diff * 0.14;
-  }
-  DG.samCar.position.x = DG.carZ; /* carZ = position latérale X */
-
-  /* Légère inclinaison latérale pendant changement de voie */
-  DG.samCar.rotation.z = diff * 0.18;
-
-  /* Rotation des roues */
-  if(DG.samCar.userData.wheels){
-    DG.samCar.userData.wheels.forEach(function(w){ w.rotation.x += DG.speed * 0.8; });
-  }
-  /* Animation bras avatar SAM */
-  if(DG.samCar.userData.avatar){
-    var av = DG.samCar.userData.avatar;
-    var swing = Math.sin(DG.frame * 0.18) * 0.35;
-    if(av.userData.armL) av.userData.armL.rotation.z = 0.3 + swing;
-    if(av.userData.armR) av.userData.armR.rotation.z = -0.3 - swing;
-    /* Légère oscillation tête */
-    var headMesh = av.children[0];
-    if(av.children[1]) av.children[1].position.y = 0.53 + Math.sin(DG.frame*0.1)*0.015;
-  }
-
-  /* Bouclier */
-  if(DG.shield){
-    DG.shield.visible = DG.invincible > 0;
-    DG.shield.rotation.z += 0.05;
-    if(DG.shield.material) DG.shield.material.opacity = 0.4 + Math.sin(DG.frame*0.2)*0.3;
-  }
-
-  /* Déplacer les objets (ils avancent vers la caméra = Z+ ) */
-  for(var i = DG.objects.length-1; i>=0; i--){
-    var o = DG.objects[i];
-    o.mesh.position.z += DG.speed * 2.5;
-
-    /* Animations spin/float */
-    if(o.mesh.userData.spin) o.mesh.children[0].rotation.y += 0.05;
-    if(o.mesh.userData.float) o.mesh.children[0].position.y = 0.55 + Math.sin(DG.frame*0.08 + i)*0.12;
-    if(o.mesh.userData.wobble) o.mesh.rotation.y = Math.sin(DG.frame*0.12 + i)*0.12;
-
-    /* Supprimer si sorti */
-    if(o.mesh.position.z > 12){
-      DG.scene.remove(o.mesh);
-      DG.objects.splice(i,1);
-      continue;
-    }
-
-    /* Collisions */
-    if(!o.hit && DG.invincible <= 0){
-      var carZ_pos = 3.5; /* position Z fixe de la voiture */
-      var sameLane = Math.abs(o.lane - DG.targetLane) === 0;
-      var inRange = o.mesh.position.z > carZ_pos - 2.5 && o.mesh.position.z < carZ_pos + 1.5;
-      if(sameLane && inRange){
-        o.hit = true;
-        if(o.type==='mocktail'){
-          DG.score+=10; DG.speed=Math.max(0.1,DG.speed-0.04);
-          DG.scene.remove(o.mesh); DG.objects.splice(i,1);
-          driveFlash('+10 🍹');
-        } else if(o.type==='star'){
-          DG.score+=25; DG.invincible=100;
-          DG.scene.remove(o.mesh); DG.objects.splice(i,1);
-          driveFlash('+25 ⭐');
-        } else {
-          DG.lives--; updateDriveLives(); DG.invincible=80;
-          DG.scene.remove(o.mesh); DG.objects.splice(i,1);
-          /* Flash rouge caméra */
-          DG.scene.background = new THREE.Color(0x330000);
-          setTimeout(function(){if(DG.scene)DG.scene.background=new THREE.Color(0x07070F);},120);
-          if(DG.lives<=0){ driveGameOver3D(); return; }
-        }
+  /* Confettis rapides */
+  var CC=['#FFCF00','#00B0FF','#12CCBD','#FA26FA','#9C45FF'];
+  for(var i=0;i<50;i++){
+    (function(d){setTimeout(function(){
+      var el=document.createElement('div');
+      el.style.cssText='position:fixed;pointer-events:none;z-index:900;border-radius:2px;';
+      var col=CC[Math.floor(Math.random()*CC.length)];
+      var x=Math.random()*100,sz=5+Math.random()*7;
+      el.style.left=x+'vw'; el.style.top='-10px';
+      el.style.width=sz+'px'; el.style.height=sz+'px';
+      el.style.background=col;
+      el.style.borderRadius=Math.random()>0.5?'50%':'2px';
+      document.body.appendChild(el);
+      var t0=performance.now(),dur=1000+Math.random()*800,dx=(Math.random()-0.5)*15;
+      function fall(ts){
+        var p=Math.min((ts-t0)/dur,1);
+        el.style.top=(p*(window.innerHeight+20)-10)+'px';
+        el.style.left=(x+p*dx)+'vw';
+        el.style.opacity=p<0.8?1:(1-(p-0.8)/0.2);
+        if(p<1)requestAnimationFrame(fall);else el.remove();
       }
-    }
+      requestAnimationFrame(fall);
+    },d);})(i*40+Math.random()*150);
   }
-
-  if(DG.invincible>0) DG.invincible--;
-
-  /* Scroll des bandes de route */
-  DG.roadOffset = (DG.roadOffset + DG.speed) % 3.5;
-  DG.roadStripes.forEach(function(sg){
-    sg.group.children.forEach(function(s,i){
-      s.position.z += DG.speed * 2.5;
-      if(s.position.z > 12) s.position.z -= 70;
-    });
-  });
-
-  /* Indicateur vitesse (overlay 2D DOM) */
-  DG.renderer.render(DG.scene, DG.camera);
-  DG.raf = requestAnimationFrame(driveLoop);
 }
 
-function spawnDriveObj3D(){
-  var lane = Math.floor(Math.random()*3);
-  var r = Math.random();
-  /* Plus de voitures ivres aux niveaux élevés */
-  var carProb = Math.min(0.62, 0.42 + DG.level * 0.02);
-  var type = r<carProb?'car': r<(carProb+0.26)?'mocktail': r<(carProb+0.40)?'bottle':'star';
-  var mesh = buildObstacle(type);
-  /* Objets arrivent de Z très négatif (loin devant) et avancent vers la caméra (Z+) */
-  mesh.position.set(LANE_Z[lane], 0, -30);
-  DG.scene.add(mesh);
-  DG.objects.push({type:type, lane:lane, mesh:mesh, hit:false});
-}
-
-function restartDriveGame(){
-  DG.running=false;
-  if(DG.raf) cancelAnimationFrame(DG.raf);
-  stopDriveListeners();
-  if(DG.renderer){ DG.renderer.dispose(); DG.renderer=null; }
-  document.getElementById('drive-intro').style.display='flex';
-  document.getElementById('drive-game').style.display='none';
-  document.getElementById('drive-over').style.display='none';
-}
-
-function onDriveTouchStart(e){ DG.touchStartX=e.touches[0].clientX; }
-function onDriveTouchEnd(e){
-  if(!DG.running) return;
-  var dx=e.changedTouches[0].clientX-DG.touchStartX;
-  if(Math.abs(dx)>25){ if(dx<0&&DG.targetLane>0)DG.targetLane--; else if(dx>0&&DG.targetLane<2)DG.targetLane++; }
-}
-function onDriveKey(e){
-  if(!DG.running) return;
-  if(e.key==='ArrowLeft'&&DG.targetLane>0)DG.targetLane--;
-  else if(e.key==='ArrowRight'&&DG.targetLane<2)DG.targetLane++;
-}
-function stopDriveListeners(){
-  var cv=document.getElementById('drive-canvas');
-  if(cv){cv.removeEventListener('touchstart',onDriveTouchStart);cv.removeEventListener('touchend',onDriveTouchEnd);}
-  document.removeEventListener('keydown',onDriveKey);
-}
-
-var _dFEl=null;
-function driveFlash(txt){
-  if(!_dFEl){_dFEl=document.createElement('div');_dFEl.style.cssText='position:absolute;top:35%;left:50%;transform:translate(-50%,-50%);font-family:Barlow Condensed,sans-serif;font-size:26px;font-weight:900;color:#FFCF00;pointer-events:none;z-index:50;text-shadow:0 0 20px rgba(255,207,0,0.8);';var dg=document.getElementById('drive-canvas-wrap');dg.style.position='relative';dg.appendChild(_dFEl);}
-  _dFEl.textContent=txt;_dFEl.style.opacity='1';_dFEl.style.transform='translate(-50%,-50%) scale(1)';
-  var t0=performance.now();
-  function a(ts){var p=Math.min((ts-t0)/800,1);_dFEl.style.opacity=(1-p).toString();_dFEl.style.transform='translate(-50%,'+((-50)-p*30)+'%) scale('+(1+p*0.3)+')';if(p<1)requestAnimationFrame(a);}
-  requestAnimationFrame(a);
-}
-
-function updateDriveLives(){ var h=['','❤️','❤️❤️','❤️❤️❤️']; document.getElementById('drive-lives').textContent=h[Math.max(0,DG.lives)]; }
-
-function driveGameOver3D(){
-  DG.running=false;
-  if(DG.raf) cancelAnimationFrame(DG.raf);
-  stopDriveListeners();
-  S.driveScore=DG.score;
-  document.getElementById('drive-final-score').textContent=DG.score;
-  var msg=DG.score<300?'Continue de pratiquer !':DG.score<800?'Pas mal, Sam !':DG.score<1500?'Très bon score !':'Sam légendaire au volant !';
-  document.getElementById('drive-final-msg').textContent=msg;
-  document.getElementById('drive-game').style.display='none';
-  document.getElementById('drive-over').style.display='flex';
+function resetDraw(){
+  /* Retirer le gagnant et relancer */
+  DRAW.names = DRAW.names.filter(function(n){ return n !== DRAW.winner; });
+  DRAW.winner = null;
+  if(DRAW.names.length < 2){
+    initDrawScreen();
+  } else {
+    document.getElementById('draw-result').style.display  = 'none';
+    document.getElementById('draw-machine').style.display = 'none';
+    document.getElementById('draw-input').style.display   = 'flex';
+    renderDrawList();
+  }
 }
 
 /* ══ SITUATIONS ══ */
@@ -1384,7 +1161,7 @@ function updateBarScore(){
 
 /* ══ RÉSULTATS ══ */
 function initResults(){
-  var total=S.qScore+S.sitScore+S.mockScore+Math.floor(S.driveScore/10);
+  var total=S.qScore+S.sitScore+S.mockScore;
   var t=SAM_TYPES.find(function(x){return total<=x.max;})||SAM_TYPES[SAM_TYPES.length-1];
   var dom='protecteur',domV=-1;for(var k in S.prof){if(S.prof[k]>domV){domV=S.prof[k];dom=k;}}
   var pl={protecteur:'Le Protecteur',diplomate:'Le Diplomate',logisticien:'Le Logisticien',discret:'Le Discret',libre:'Le Libre'};
@@ -1398,7 +1175,7 @@ function initResults(){
   function cu(ts){var p=Math.min((ts-t0)/dur,1),ease=1-Math.pow(1-p,3);el.textContent=Math.round(ease*total);if(p<1)requestAnimationFrame(cu);else{el.textContent=total;launchConfetti();}}
   setTimeout(function(){requestAnimationFrame(cu);},400);
   var bd=document.getElementById('breakdown');bd.innerHTML='';
-  [['Quiz identité',S.qScore+' pts'],['Sam au volant',Math.floor(S.driveScore/10)+' pts'],['Situations',S.sitScore+' pts'],['Bar de Sam',S.mockScore+' pts'],['Total',total+' pts']].forEach(function(r,i){
+  [['Quiz identité',S.qScore+' pts'],['Situations',S.sitScore+' pts'],['Bar de Sam',S.mockScore+' pts'],['Total',total+' pts']].forEach(function(r,i){
     var row=document.createElement('div');row.className='bd-row';
     row.style.animation='fadeUp 0.4s ease '+(0.5+i*0.06)+'s both';
     if(i===4)row.style.borderTop='1px solid var(--border2)';
@@ -1430,7 +1207,7 @@ function genCard(prenom,score,type,mocktail,badge){var cv=document.getElementByI
   ctx.font='bold 13px Arial';ctx.fillStyle='#000';ctx.fillText(prenom.toUpperCase(),70,66);var sg=ctx.createLinearGradient(W/2-80,100,W/2+80,200);sg.addColorStop(0,'#FFCF00');sg.addColorStop(1,'#00B0FF');ctx.fillStyle=sg;ctx.font='bold 88px Arial';ctx.textAlign='center';ctx.fillText(String(score),W/2,185);ctx.fillStyle='rgba(242,242,240,0.4)';ctx.font='12px Arial';ctx.fillText('SAM SCORE',W/2,206);ctx.fillStyle='#FFCF00';ctx.font='bold 24px Arial';ctx.fillText(type.toUpperCase(),W/2,248);ctx.fillStyle='rgba(255,207,0,0.6)';ctx.font='bold 12px Arial';ctx.fillText(badge,W/2,272);ctx.fillStyle='#00B0FF';ctx.font='bold 14px Arial';ctx.fillText('Mocktail : '+mocktail,W/2,312);ctx.fillStyle='rgba(242,242,240,0.18)';ctx.font='10px Arial';ctx.fillText('sam-experience.fr',W/2,358);ctx.textAlign='left';}
 function dlCard(){var l=document.createElement('a');l.download='carte-sam-'+S.prenom.toLowerCase()+'.png';l.href=document.getElementById('card-canvas').toDataURL('image/png');l.click();}
 function copyShare(){var total=S.qScore+S.sitScore+S.mockScore;var t=SAM_TYPES.find(function(x){return total<=x.max;})||SAM_TYPES[SAM_TYPES.length-1];var msg=S.prenom+' — '+total+' pts "'+t.type+'". Et toi ? sam-experience.fr';if(navigator.clipboard){navigator.clipboard.writeText(msg).then(function(){var el=document.getElementById('copied');el.textContent='Lien copié !';el.style.opacity='1';setTimeout(function(){el.style.opacity='0';},2500);});}}
-function restart(){S.qScore=0;S.sitScore=0;S.mockScore=0;S.driveScore=0;S.qIdx=0;pickQuiz();S.sitIdx=0;S.sitAnswers=[];S.selIngs=[];S.mocktailName='';S.mockBonusScore=0;S.mockBaseScore=0;S.prof={protecteur:0,diplomate:0,logisticien:0,discret:0,libre:0};document.getElementById('inp-prenom').value='';document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById('s0').classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+function restart(){S.qScore=0;S.sitScore=0;S.mockScore=0;S.qIdx=0;pickQuiz();S.sitIdx=0;S.sitAnswers=[];S.selIngs=[];S.mocktailName='';S.mockBonusScore=0;S.mockBaseScore=0;S.prof={protecteur:0,diplomate:0,logisticien:0,discret:0,libre:0};NAV_ACTES.forEach(function(a){a.unlocked=false;});hideNavBar();document.getElementById('inp-prenom').value='';document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById('s0').classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
 </script>
 </body>
 </html>
