@@ -322,6 +322,46 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 #hero-sub{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.55);animation:heroSubIn 0.5s ease 1.2s both;margin-top:6px;}
 #hero-banner{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;background:var(--y);color:#000;padding:5px 18px;border-radius:40px;letter-spacing:0.12em;text-transform:uppercase;animation:heroNameIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 1.45s both;margin-top:14px;}
 
+/* ══ ACCUEIL — CARDS MODE ══ */
+.home-sub{font-size:15px;color:var(--muted);text-align:center;line-height:1.65;margin-bottom:1.75rem;max-width:360px;animation:fadeUp 0.5s ease 0.25s both;}
+.home-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.14em;color:var(--muted2);margin-bottom:10px;width:100%;max-width:400px;animation:fadeUp 0.4s ease 0.35s both;}
+.mode-feat{width:100%;max-width:400px;display:flex;align-items:center;gap:16px;background:var(--s2);border:2px solid var(--y);border-radius:var(--r);padding:1.2rem 1.4rem;cursor:pointer;transition:all 0.2s;box-shadow:0 0 28px rgba(255,207,0,0.1);margin-bottom:10px;-webkit-tap-highlight-color:transparent;animation:fadeUp 0.4s ease 0.4s both;}
+.mode-feat:hover{box-shadow:0 0 40px rgba(255,207,0,0.22);transform:translateY(-2px);}
+.mode-feat:active{transform:scale(0.97);}
+.mode-feat.mc-active{background:rgba(255,207,0,0.1);box-shadow:0 0 40px rgba(255,207,0,0.25);}
+.mode-feat-icon{font-size:36px;flex-shrink:0;line-height:1;}
+.mode-feat-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;text-transform:uppercase;color:var(--y);letter-spacing:0.02em;margin-bottom:2px;}
+.mode-feat-desc{font-size:11px;color:var(--muted);line-height:1.5;}
+.mode-feat-arr{font-size:20px;color:var(--y);margin-left:auto;flex-shrink:0;transition:transform 0.2s;}
+.mode-feat:hover .mode-feat-arr{transform:translateX(4px);}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:400px;margin-bottom:1.5rem;animation:fadeUp 0.4s ease 0.5s both;}
+.mode-card{background:var(--s2);border:2px solid var(--border);border-radius:var(--r);padding:1rem;cursor:pointer;transition:all 0.2s;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden;}
+.mode-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;opacity:0;transition:opacity 0.2s;}
+.mode-card.mc-active::before,.mode-card:hover::before{opacity:1;}
+.mode-card:hover{transform:translateY(-3px);}
+.mode-card:active{transform:scale(0.95);}
+.mode-card.mc-active{background:var(--s3);}
+.mc-icon{font-size:26px;display:block;margin-bottom:8px;line-height:1;}
+.mc-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:3px;}
+.mc-desc{font-size:11px;color:var(--muted);line-height:1.4;}
+/* Couleurs par mode */
+.mc-quiz{border-color:rgba(255,207,0,0.25);}
+.mc-quiz::before{background:var(--y);}
+.mc-quiz.mc-active,.mc-quiz:hover{border-color:var(--y);box-shadow:0 4px 18px rgba(255,207,0,0.15);}
+.mc-quiz .mc-title{color:var(--y);}
+.mc-draw{border-color:rgba(0,176,255,0.25);}
+.mc-draw::before{background:var(--c);}
+.mc-draw.mc-active,.mc-draw:hover{border-color:var(--c);box-shadow:0 4px 18px rgba(0,176,255,0.15);}
+.mc-draw .mc-title{color:var(--c);}
+.mc-sit{border-color:rgba(250,38,250,0.25);}
+.mc-sit::before{background:var(--m);}
+.mc-sit.mc-active,.mc-sit:hover{border-color:var(--m);box-shadow:0 4px 18px rgba(250,38,250,0.12);}
+.mc-sit .mc-title{color:var(--m);}
+.mc-bar{border-color:rgba(18,204,188,0.25);}
+.mc-bar::before{background:var(--t);}
+.mc-bar.mc-active,.mc-bar:hover{border-color:var(--t);box-shadow:0 4px 18px rgba(18,204,188,0.12);}
+.mc-bar .mc-title{color:var(--t);}
+
 </style>
 </head>
 <body>
@@ -354,20 +394,53 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
     </div>
   </div>
   <h1 class="hero-title"><span><em>Une nuit</em></span><span><em>avec Sam</em></span></h1>
-  <p class="sub" style="animation:fadeUp 0.5s ease 0.3s both;font-size:16px;">Être Sam, c'est pas une contrainte.<br><strong style="color:var(--text);">C'est le rôle le plus important de la soirée.</strong></p>
-  <div class="notif-card"><div class="notif-dot"></div><div><p style="font-size:12px;color:var(--muted);margin-bottom:4px;">Il y a 2 min · Léa</p><p style="font-size:14px;font-weight:500;line-height:1.5;">Soirée chez moi ce soir 🎉 — T'es Sam ou pas ?</p></div></div>
-  <div class="step-list">
-    <div class="step-row" style="animation-delay:0.1s"><div class="step-num">1</div><div class="step-label"><p>Quiz identité</p><p>T'es quel type de Sam dans ton groupe ?</p></div></div>
-    <div class="step-row" style="animation-delay:0.17s"><div class="step-num">2</div><div class="step-label"><p>Tirage au sort</p><p>La machine désigne le Sam de la soirée</p></div></div>
-    <div class="step-row" style="animation-delay:0.24s"><div class="step-num">3</div><div class="step-label"><p>La soirée en images</p><p>4 situations — qu'est-ce que tu fais vraiment ?</p></div></div>
-    <div class="step-row" style="animation-delay:0.31s"><div class="step-num">4</div><div class="step-label"><p>Le bar de Sam</p><p>10 ingrédients, 4 doses, tes combos font le score</p></div></div>
-    <div class="step-row" style="animation-delay:0.38s"><div class="step-num">5</div><div class="step-label"><p>Ta carte Sam</p><p>Score, profil, mocktail signature</p></div></div>
+  <p class="home-sub">Être Sam, c'est pas une contrainte.<br><strong style="color:var(--text);">C'est le rôle le plus important de la soirée.</strong></p>
+
+  <!-- Prénom -->
+  <div style="width:100%;max-width:400px;margin-bottom:1.5rem;animation:fadeUp 0.4s ease 0.3s both;">
+    <input class="inp" id="inp-prenom" type="text" placeholder="Ton prénom" maxlength="18" autocomplete="off" style="margin-bottom:0;">
+    <p class="err" id="err0" style="margin-top:6px;"></p>
   </div>
-  <div style="width:100%;max-width:400px;animation:fadeUp 0.5s ease 0.5s both;">
-    <p style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:0.75rem;">Ton prénom pour commencer</p>
-    <input class="inp" id="inp-prenom" type="text" placeholder="Ton prénom" maxlength="18" autocomplete="off">
-    <p class="err" id="err0"></p>
-    <button class="btn btn-y" onclick="startApp()">Entrer dans la soirée →</button>
+
+  <!-- Label -->
+  <p class="home-label">Choisis ton expérience</p>
+
+  <!-- Card principale : expérience complète -->
+  <div class="mode-feat mc-active" id="mc-full" onclick="selectMode('full',this)">
+    <span class="mode-feat-icon">🎮</span>
+    <div class="mode-feat-text">
+      <p class="mode-feat-title">Expérience complète</p>
+      <p class="mode-feat-desc">Quiz · Tirage · Situations · Bar · Carte Sam</p>
+    </div>
+    <span class="mode-feat-arr">→</span>
+  </div>
+
+  <!-- Grille 2×2 -->
+  <div class="mode-grid">
+    <div class="mode-card mc-quiz" id="mc-quiz" onclick="selectMode('quiz',this)">
+      <span class="mc-icon">🧠</span>
+      <p class="mc-title">Quiz</p>
+      <p class="mc-desc">Découvre ton profil Sam</p>
+    </div>
+    <div class="mode-card mc-draw" id="mc-draw" onclick="selectMode('draw',this)">
+      <span class="mc-icon">🎡</span>
+      <p class="mc-title">Tirage</p>
+      <p class="mc-desc">Désigne le Sam du soir</p>
+    </div>
+    <div class="mode-card mc-sit" id="mc-sit" onclick="selectMode('situations',this)">
+      <span class="mc-icon">🎭</span>
+      <p class="mc-title">Situations</p>
+      <p class="mc-desc">4 dilemmes de la vraie vie</p>
+    </div>
+    <div class="mode-card mc-bar" id="mc-bar" onclick="selectMode('bar',this)">
+      <span class="mc-icon">🍹</span>
+      <p class="mc-title">Bar de Sam</p>
+      <p class="mc-desc">Construis ton mocktail</p>
+    </div>
+  </div>
+
+  <div style="width:100%;max-width:400px;animation:fadeUp 0.4s ease 0.6s both;">
+    <button class="btn btn-y" id="btn-start" onclick="startApp()">Commencer →</button>
   </div>
 </div>
 
@@ -873,19 +946,43 @@ function showScreen(id){
   else if(id==='s5')initResults();
 }
 
+/* ══ MODE ACCUEIL ══ */
+var APP_MODE='full';
+var MODE_CFG={
+  full:       {screen:'s1',title:'Acte 1',sub:'Quiz identité'},
+  quiz:       {screen:'s1',title:'Acte 1',sub:'Quiz identité'},
+  draw:       {screen:'s2',title:'Acte 2',sub:'Qui est Sam ce soir ?'},
+  situations: {screen:'s3',title:'Acte 3',sub:'La soirée en images'},
+  bar:        {screen:'s4',title:'Acte 4',sub:'Le bar de Sam'}
+};
+
+function selectMode(mode,el){
+  APP_MODE=mode;
+  /* Retirer mc-active de toutes les cards */
+  document.querySelectorAll('.mode-feat,.mode-card').forEach(function(c){c.classList.remove('mc-active');});
+  el.classList.add('mc-active');
+  /* Mettre à jour le libellé du bouton */
+  var labels={full:'Commencer l\'expérience →',quiz:'Lancer le quiz →',draw:'Lancer la roue →',situations:'Voir les situations →',bar:'Aller au bar →'};
+  document.getElementById('btn-start').textContent=labels[mode]||'Commencer →';
+}
+
 /* ══ START ══ */
 function startApp(){
   var v=document.getElementById('inp-prenom').value.trim();
-  if(!v){document.getElementById('err0').textContent='Entre ton prénom pour commencer.';return;}
+  if(!v){
+    document.getElementById('err0').textContent='Entre ton prénom pour commencer.';
+    document.getElementById('inp-prenom').focus();
+    return;
+  }
   document.getElementById('err0').textContent='';
   S.prenom=v;
-  /* Réinitialiser les verrous */
   NAV_ACTES.forEach(function(a){a.unlocked=false;});
-  unlockNav('s1');
+  var cfg=MODE_CFG[APP_MODE]||MODE_CFG.full;
+  unlockNav(cfg.screen);
   showNavBar();
   showScoreHud();
   updateScoreHud();
-  transition('s1','Acte 1','Quiz identité');
+  transition(cfg.screen,cfg.title,cfg.sub);
 }
 document.getElementById('inp-prenom').addEventListener('keydown',function(e){if(e.key==='Enter')startApp();});
 
@@ -1526,7 +1623,23 @@ function genCard(prenom,score,type,mocktail,badge){
 }
 function dlCard(){var l=document.createElement('a');l.download='sam-story-'+S.prenom.toLowerCase()+'.png';l.href=document.getElementById('card-canvas').toDataURL('image/png');l.click();}
 function copyShare(){var total=S.qScore+S.sitScore+S.mockScore;var t=SAM_TYPES.find(function(x){return total<=x.max;})||SAM_TYPES[SAM_TYPES.length-1];var msg=S.prenom+' — '+total+' pts "'+t.type+'". Et toi ? sam-experience.fr';if(navigator.clipboard){navigator.clipboard.writeText(msg).then(function(){var el=document.getElementById('copied');el.textContent='Lien copié !';el.style.opacity='1';setTimeout(function(){el.style.opacity='0';},2500);});}}
-function restart(){S.qScore=0;S.sitScore=0;S.mockScore=0;S.qIdx=0;pickQuiz();S.sitIdx=0;S.sitAnswers=[];S.selIngs=[];S.mocktailName='';S.mockBonusScore=0;S.mockBaseScore=0;S.prof={protecteur:0,diplomate:0,logisticien:0,discret:0,libre:0};NAV_ACTES.forEach(function(a){a.unlocked=false;});hideNavBar();hideScoreHud();document.getElementById('inp-prenom').value='';document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById('s0').classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+function restart(){
+  S.qScore=0;S.sitScore=0;S.mockScore=0;S.qIdx=0;pickQuiz();S.sitIdx=0;S.sitAnswers=[];
+  S.selIngs=[];S.mocktailName='';S.mockBonusScore=0;S.mockBaseScore=0;
+  S.prof={protecteur:0,diplomate:0,logisticien:0,discret:0,libre:0};
+  NAV_ACTES.forEach(function(a){a.unlocked=false;});
+  hideNavBar();hideScoreHud();
+  document.getElementById('inp-prenom').value='';
+  /* Remettre la sélection de mode à "full" */
+  APP_MODE='full';
+  document.querySelectorAll('.mode-feat,.mode-card').forEach(function(c){c.classList.remove('mc-active');});
+  var fc=document.getElementById('mc-full');
+  if(fc)fc.classList.add('mc-active');
+  document.getElementById('btn-start').textContent='Commencer →';
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById('s0').classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 </script>
 </body>
 </html>
