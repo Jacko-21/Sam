@@ -238,7 +238,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 <div class="screen active" id="s0">
   <div class="sam-bandeau-wrap" style="animation:fadeUp 0.5s ease both;">
     <div class="sam-bandeau">
-      <svg width="38" height="38" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="47" stroke="#000" stroke-width="6" fill="white"/><circle cx="33" cy="44" r="18" stroke="#000" stroke-width="5.5" fill="white"/><circle cx="33" cy="44" r="10" stroke="#000" stroke-width="5" fill="white"/><circle cx="37" cy="40" r="5" fill="#000"/><circle cx="64" cy="42" r="14" stroke="#000" stroke-width="5.5" fill="white"/><circle cx="64" cy="42" r="7.5" stroke="#000" stroke-width="5" fill="white"/><circle cx="67" cy="39" r="3.5" fill="#000"/><path d="M35 68 Q50 80 66 68" stroke="#000" stroke-width="5" stroke-linecap="round" fill="none"/></svg>
+      <svg width="38" height="38" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="46" fill="white" stroke="black" stroke-width="5.5"/><circle cx="33" cy="42" r="13.5" fill="none" stroke="black" stroke-width="5"/><circle cx="33" cy="42" r="3.3" fill="black"/><circle cx="62" cy="42" r="13.5" fill="none" stroke="black" stroke-width="5"/><circle cx="62" cy="42" r="3.3" fill="black"/><path d="M 37 67 A 26 26 0 0 0 63 67" fill="none" stroke="black" stroke-width="5" stroke-linecap="square"/></svg>
       <span class="bnd">SAM</span>
     </div>
   </div>
@@ -739,13 +739,27 @@ function drawDriveObj(ctx,o){
 
 function drawSamCar(ctx,x,y,shield){
   ctx.save();ctx.translate(x,y+40);
+  /* Bouclier */
   if(shield){var sp=1+Math.sin(DG.frame*0.2)*0.05;ctx.beginPath();ctx.arc(0,0,38*sp,0,Math.PI*2);ctx.strokeStyle='rgba(255,207,0,0.7)';ctx.lineWidth=2.5;ctx.stroke();ctx.fillStyle='rgba(255,207,0,0.07)';ctx.fill();}
+  /* Carrosserie jaune SAM */
   ctx.fillStyle=shield?'#FFE040':'#FFCF00';ctx.beginPath();ctx.roundRect(-20,-34,40,64,6);ctx.fill();
+  /* Toit */
   ctx.fillStyle='#E6B800';ctx.beginPath();ctx.roundRect(-14,-30,28,36,4);ctx.fill();
-  ctx.fillStyle='rgba(0,50,100,0.6)';ctx.beginPath();ctx.roundRect(-10,-26,20,18,3);ctx.fill();
+  /* Visage SAM sur le toit : cercle blanc */
+  ctx.fillStyle='white';ctx.beginPath();ctx.arc(0,-12,10,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='black';ctx.lineWidth=1.5;ctx.stroke();
+  /* Œil gauche */
+  ctx.strokeStyle='black';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(-3.5,-13,3.5,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle='black';ctx.beginPath();ctx.arc(-3.5,-13,1,0,Math.PI*2);ctx.fill();
+  /* Œil droit */
+  ctx.beginPath();ctx.arc(3.5,-13,3.5,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle='black';ctx.beginPath();ctx.arc(3.5,-13,1,0,Math.PI*2);ctx.fill();
+  /* Sourire */
+  ctx.beginPath();ctx.arc(0,-12,4.5,0.3,Math.PI-0.3);ctx.strokeStyle='black';ctx.lineWidth=1.2;ctx.stroke();
+  /* Roues */
   ctx.fillStyle='#111';[[-21,-22],[21,-22],[-21,22],[21,22]].forEach(function(w){ctx.beginPath();ctx.ellipse(w[0],w[1],7,9,0,0,Math.PI*2);ctx.fill();});
+  /* Phares avant */
   ctx.fillStyle='rgba(255,240,100,0.9)';ctx.beginPath();ctx.roundRect(-18,-35,10,5,2);ctx.fill();ctx.beginPath();ctx.roundRect(8,-35,10,5,2);ctx.fill();
-  ctx.fillStyle='#000';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText('SAM',0,-8);ctx.textAlign='left';
   ctx.restore();
 }
 
@@ -1001,7 +1015,21 @@ var CCOL=['#FFCF00','#00B0FF','#12CCBD','#FA26FA','#9C45FF','#FF6B6B'];
 function launchConfetti(){for(var i=0;i<80;i++){(function(d){setTimeout(function(){var el=document.createElement('div');el.className='confetti-piece';var col=CCOL[Math.floor(Math.random()*CCOL.length)],x=Math.random()*100,rot=Math.random()*360,sz=6+Math.random()*8;el.style.cssText='left:'+x+'vw;top:-10px;width:'+sz+'px;height:'+sz+'px;background:'+col+';border-radius:'+(Math.random()>0.5?'50%':'2px')+';transform:rotate('+rot+'deg);';document.body.appendChild(el);var t0=performance.now(),dur=1200+Math.random()*1000,dx=(Math.random()-0.5)*20;function fall(ts){var p=Math.min((ts-t0)/dur,1);el.style.top=(p*(window.innerHeight+20)-10)+'px';el.style.left=(x+p*dx)+'vw';el.style.transform='rotate('+(rot+p*720)+'deg)';el.style.opacity=p<0.8?1:(1-(p-0.8)/0.2);if(p<1)requestAnimationFrame(fall);else el.remove();}requestAnimationFrame(fall);},d);})(i*25+Math.random()*200);}}
 
 /* ══ CANVAS CARD ══ */
-function genCard(prenom,score,type,mocktail,badge){var cv=document.getElementById('card-canvas'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height;ctx.clearRect(0,0,W,H);ctx.fillStyle='#07070F';ctx.fillRect(0,0,W,H);var grd=ctx.createLinearGradient(0,0,W,0);grd.addColorStop(0,'#FA26FA');grd.addColorStop(0.33,'#FFCF00');grd.addColorStop(0.66,'#00B0FF');grd.addColorStop(1,'#12CCBD');ctx.strokeStyle=grd;ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(5,5,W-10,H-10,14);ctx.stroke();ctx.fillStyle='#FFCF00';ctx.fillRect(5,5,W-10,56);ctx.fillStyle='#000';ctx.font='bold 36px Arial';ctx.textAlign='left';ctx.fillText('SAM',22,44);ctx.font='11px Arial';ctx.fillText("CARTE D'IDENTITÉ",88,28);ctx.font='bold 14px Arial';ctx.fillText(prenom.toUpperCase(),88,48);var sg=ctx.createLinearGradient(W/2-80,100,W/2+80,200);sg.addColorStop(0,'#FFCF00');sg.addColorStop(1,'#00B0FF');ctx.fillStyle=sg;ctx.font='bold 88px Arial';ctx.textAlign='center';ctx.fillText(String(score),W/2,185);ctx.fillStyle='rgba(242,242,240,0.4)';ctx.font='12px Arial';ctx.fillText('SAM SCORE',W/2,206);ctx.fillStyle='#FFCF00';ctx.font='bold 24px Arial';ctx.fillText(type.toUpperCase(),W/2,248);ctx.fillStyle='rgba(255,207,0,0.6)';ctx.font='bold 12px Arial';ctx.fillText(badge,W/2,272);ctx.fillStyle='#00B0FF';ctx.font='bold 14px Arial';ctx.fillText('Mocktail : '+mocktail,W/2,312);ctx.fillStyle='rgba(242,242,240,0.18)';ctx.font='10px Arial';ctx.fillText('sam-experience.fr',W/2,358);ctx.textAlign='left';}
+function genCard(prenom,score,type,mocktail,badge){var cv=document.getElementById('card-canvas'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height;ctx.clearRect(0,0,W,H);ctx.fillStyle='#07070F';ctx.fillRect(0,0,W,H);var grd=ctx.createLinearGradient(0,0,W,0);grd.addColorStop(0,'#FA26FA');grd.addColorStop(0.33,'#FFCF00');grd.addColorStop(0.66,'#00B0FF');grd.addColorStop(1,'#12CCBD');ctx.strokeStyle=grd;ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(5,5,W-10,H-10,14);ctx.stroke();ctx.fillStyle='#FFCF00';ctx.fillRect(5,5,W-10,56);/* Logo SAM : visage blanc avec yeux cerclés */
+  ctx.fillStyle='white';ctx.beginPath();ctx.arc(44,30,18,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='black';ctx.lineWidth=2.5;ctx.stroke();
+  /* Œil gauche */
+  ctx.strokeStyle='black';ctx.lineWidth=2;ctx.beginPath();ctx.arc(38,28,6,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle='black';ctx.beginPath();ctx.arc(38,28,1.8,0,Math.PI*2);ctx.fill();
+  /* Œil droit */
+  ctx.beginPath();ctx.arc(50,28,6,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle='black';ctx.beginPath();ctx.arc(50,28,1.8,0,Math.PI*2);ctx.fill();
+  /* Sourire */
+  ctx.beginPath();ctx.arc(44,30,8,0.3,Math.PI-0.3);ctx.strokeStyle='black';ctx.lineWidth=2;ctx.stroke();
+  /* SAM text */
+  ctx.fillStyle='#000';ctx.font='bold 22px Arial';ctx.textAlign='left';ctx.fillText('SAM',70,38);
+  ctx.font='11px Arial';ctx.fillStyle='#333';ctx.fillText("CARTE D'IDENTITÉ",70,52);
+  ctx.font='bold 13px Arial';ctx.fillStyle='#000';ctx.fillText(prenom.toUpperCase(),70,66);var sg=ctx.createLinearGradient(W/2-80,100,W/2+80,200);sg.addColorStop(0,'#FFCF00');sg.addColorStop(1,'#00B0FF');ctx.fillStyle=sg;ctx.font='bold 88px Arial';ctx.textAlign='center';ctx.fillText(String(score),W/2,185);ctx.fillStyle='rgba(242,242,240,0.4)';ctx.font='12px Arial';ctx.fillText('SAM SCORE',W/2,206);ctx.fillStyle='#FFCF00';ctx.font='bold 24px Arial';ctx.fillText(type.toUpperCase(),W/2,248);ctx.fillStyle='rgba(255,207,0,0.6)';ctx.font='bold 12px Arial';ctx.fillText(badge,W/2,272);ctx.fillStyle='#00B0FF';ctx.font='bold 14px Arial';ctx.fillText('Mocktail : '+mocktail,W/2,312);ctx.fillStyle='rgba(242,242,240,0.18)';ctx.font='10px Arial';ctx.fillText('sam-experience.fr',W/2,358);ctx.textAlign='left';}
 function dlCard(){var l=document.createElement('a');l.download='carte-sam-'+S.prenom.toLowerCase()+'.png';l.href=document.getElementById('card-canvas').toDataURL('image/png');l.click();}
 function copyShare(){var total=S.qScore+S.sitScore+S.mockScore;var t=SAM_TYPES.find(function(x){return total<=x.max;})||SAM_TYPES[SAM_TYPES.length-1];var msg=S.prenom+' — '+total+' pts "'+t.type+'". Et toi ? sam-experience.fr';if(navigator.clipboard){navigator.clipboard.writeText(msg).then(function(){var el=document.getElementById('copied');el.textContent='Lien copié !';el.style.opacity='1';setTimeout(function(){el.style.opacity='0';},2500);});}}
 function restart(){S.qScore=0;S.sitScore=0;S.mockScore=0;S.driveScore=0;S.qIdx=0;pickQuiz();S.sitIdx=0;S.sitAnswers=[];S.selIngs=[];S.mocktailName='';S.mockBonusScore=0;S.mockBaseScore=0;S.prof={protecteur:0,diplomate:0,logisticien:0,discret:0,libre:0};document.getElementById('inp-prenom').value='';document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById('s0').classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
