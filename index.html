@@ -323,44 +323,39 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 #hero-banner{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;background:var(--y);color:#000;padding:5px 18px;border-radius:40px;letter-spacing:0.12em;text-transform:uppercase;animation:heroNameIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 1.45s both;margin-top:14px;}
 
 /* ══ ACCUEIL — CARDS MODE ══ */
-.home-sub{font-size:15px;color:var(--muted);text-align:center;line-height:1.65;margin-bottom:1.75rem;max-width:360px;animation:fadeUp 0.5s ease 0.25s both;}
-.home-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.14em;color:var(--muted2);margin-bottom:10px;width:100%;max-width:400px;animation:fadeUp 0.4s ease 0.35s both;}
-.mode-feat{width:100%;max-width:400px;display:flex;align-items:center;gap:16px;background:var(--s2);border:2px solid var(--y);border-radius:var(--r);padding:1.2rem 1.4rem;cursor:pointer;transition:all 0.2s;box-shadow:0 0 28px rgba(255,207,0,0.1);margin-bottom:10px;-webkit-tap-highlight-color:transparent;animation:fadeUp 0.4s ease 0.4s both;}
-.mode-feat:hover{box-shadow:0 0 40px rgba(255,207,0,0.22);transform:translateY(-2px);}
-.mode-feat:active{transform:scale(0.97);}
-.mode-feat.mc-active{background:rgba(255,207,0,0.1);box-shadow:0 0 40px rgba(255,207,0,0.25);}
-.mode-feat-icon{font-size:36px;flex-shrink:0;line-height:1;}
-.mode-feat-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;text-transform:uppercase;color:var(--y);letter-spacing:0.02em;margin-bottom:2px;}
-.mode-feat-desc{font-size:11px;color:var(--muted);line-height:1.5;}
-.mode-feat-arr{font-size:20px;color:var(--y);margin-left:auto;flex-shrink:0;transition:transform 0.2s;}
-.mode-feat:hover .mode-feat-arr{transform:translateX(4px);}
-.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:400px;margin-bottom:1.5rem;animation:fadeUp 0.4s ease 0.5s both;}
-.mode-card{background:var(--s2);border:2px solid var(--border);border-radius:var(--r);padding:1rem;cursor:pointer;transition:all 0.2s;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden;}
+.home-sub{font-size:15px;color:var(--muted);text-align:center;line-height:1.65;margin-bottom:1.5rem;max-width:360px;animation:fadeUp 0.5s ease 0.25s both;}
+.home-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.14em;color:var(--muted2);width:100%;max-width:400px;animation:fadeUp 0.4s ease 0.35s both;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.sel-all-btn{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;color:var(--y);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;text-transform:uppercase;letter-spacing:0.08em;}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:400px;margin-bottom:1.5rem;animation:fadeUp 0.4s ease 0.4s both;}
+.mode-card{background:var(--s2);border:2px solid var(--border);border-radius:var(--r);padding:1rem 1rem 0.9rem;cursor:pointer;transition:all 0.18s;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden;opacity:0.45;}
 .mode-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;opacity:0;transition:opacity 0.2s;}
-.mode-card.mc-active::before,.mode-card:hover::before{opacity:1;}
-.mode-card:hover{transform:translateY(-3px);}
+.mode-card.mc-sel{opacity:1;}
+.mode-card.mc-sel::before{opacity:1;}
+.mode-card:hover{opacity:0.85;transform:translateY(-2px);}
+.mode-card.mc-sel:hover{transform:translateY(-2px);}
 .mode-card:active{transform:scale(0.95);}
-.mode-card.mc-active{background:var(--s3);}
+.mc-check{position:absolute;top:8px;right:8px;width:19px;height:19px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:transparent;transition:all 0.15s;background:transparent;}
+.mode-card.mc-sel .mc-check{color:#000;}
 .mc-icon{font-size:26px;display:block;margin-bottom:8px;line-height:1;}
 .mc-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:3px;}
 .mc-desc{font-size:11px;color:var(--muted);line-height:1.4;}
-/* Couleurs par mode */
-.mc-quiz{border-color:rgba(255,207,0,0.25);}
 .mc-quiz::before{background:var(--y);}
-.mc-quiz.mc-active,.mc-quiz:hover{border-color:var(--y);box-shadow:0 4px 18px rgba(255,207,0,0.15);}
+.mc-quiz.mc-sel,.mc-quiz:hover{border-color:rgba(255,207,0,0.6);background:rgba(255,207,0,0.06);}
+.mc-quiz.mc-sel .mc-check{background:var(--y);border-color:var(--y);}
 .mc-quiz .mc-title{color:var(--y);}
-.mc-draw{border-color:rgba(0,176,255,0.25);}
 .mc-draw::before{background:var(--c);}
-.mc-draw.mc-active,.mc-draw:hover{border-color:var(--c);box-shadow:0 4px 18px rgba(0,176,255,0.15);}
+.mc-draw.mc-sel,.mc-draw:hover{border-color:rgba(0,176,255,0.6);background:rgba(0,176,255,0.06);}
+.mc-draw.mc-sel .mc-check{background:var(--c);border-color:var(--c);}
 .mc-draw .mc-title{color:var(--c);}
-.mc-sit{border-color:rgba(250,38,250,0.25);}
 .mc-sit::before{background:var(--m);}
-.mc-sit.mc-active,.mc-sit:hover{border-color:var(--m);box-shadow:0 4px 18px rgba(250,38,250,0.12);}
+.mc-sit.mc-sel,.mc-sit:hover{border-color:rgba(250,38,250,0.55);background:rgba(250,38,250,0.05);}
+.mc-sit.mc-sel .mc-check{background:var(--m);border-color:var(--m);}
 .mc-sit .mc-title{color:var(--m);}
-.mc-bar{border-color:rgba(18,204,188,0.25);}
 .mc-bar::before{background:var(--t);}
-.mc-bar.mc-active,.mc-bar:hover{border-color:var(--t);box-shadow:0 4px 18px rgba(18,204,188,0.12);}
+.mc-bar.mc-sel,.mc-bar:hover{border-color:rgba(18,204,188,0.6);background:rgba(18,204,188,0.05);}
+.mc-bar.mc-sel .mc-check{background:var(--t);border-color:var(--t);}
 .mc-bar .mc-title{color:var(--t);}
+.mc-none-err{font-size:13px;color:#FF6B6B;text-align:center;margin-bottom:0.75rem;min-height:18px;}
 
 </style>
 </head>
@@ -402,44 +397,43 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
     <p class="err" id="err0" style="margin-top:6px;"></p>
   </div>
 
-  <!-- Label -->
-  <p class="home-label">Choisis ton expérience</p>
-
-  <!-- Card principale : expérience complète -->
-  <div class="mode-feat mc-active" id="mc-full" onclick="selectMode('full',this)">
-    <span class="mode-feat-icon">🎮</span>
-    <div class="mode-feat-text">
-      <p class="mode-feat-title">Expérience complète</p>
-      <p class="mode-feat-desc">Quiz · Tirage · Situations · Bar · Carte Sam</p>
-    </div>
-    <span class="mode-feat-arr">→</span>
+  <!-- Label + toggle tout -->
+  <div class="home-label">
+    <span>Choisis tes jeux</span>
+    <button class="sel-all-btn" id="btn-sel-all" onclick="toggleAllActs()">Tout désélectionner</button>
   </div>
 
   <!-- Grille 2×2 -->
   <div class="mode-grid">
-    <div class="mode-card mc-quiz" id="mc-quiz" onclick="selectMode('quiz',this)">
+    <div class="mode-card mc-quiz mc-sel" id="mc-s1" onclick="toggleAct('s1',this)">
+      <div class="mc-check">✓</div>
       <span class="mc-icon">🧠</span>
       <p class="mc-title">Quiz</p>
       <p class="mc-desc">Découvre ton profil Sam</p>
     </div>
-    <div class="mode-card mc-draw" id="mc-draw" onclick="selectMode('draw',this)">
+    <div class="mode-card mc-draw mc-sel" id="mc-s2" onclick="toggleAct('s2',this)">
+      <div class="mc-check">✓</div>
       <span class="mc-icon">🎡</span>
       <p class="mc-title">Tirage</p>
       <p class="mc-desc">Désigne le Sam du soir</p>
     </div>
-    <div class="mode-card mc-sit" id="mc-sit" onclick="selectMode('situations',this)">
+    <div class="mode-card mc-sit mc-sel" id="mc-s3" onclick="toggleAct('s3',this)">
+      <div class="mc-check">✓</div>
       <span class="mc-icon">🎭</span>
       <p class="mc-title">Situations</p>
       <p class="mc-desc">4 dilemmes de la vraie vie</p>
     </div>
-    <div class="mode-card mc-bar" id="mc-bar" onclick="selectMode('bar',this)">
+    <div class="mode-card mc-bar mc-sel" id="mc-s4" onclick="toggleAct('s4',this)">
+      <div class="mc-check">✓</div>
       <span class="mc-icon">🍹</span>
       <p class="mc-title">Bar de Sam</p>
       <p class="mc-desc">Construis ton mocktail</p>
     </div>
   </div>
 
-  <div style="width:100%;max-width:400px;animation:fadeUp 0.4s ease 0.6s both;">
+  <p class="mc-none-err" id="err-acts"></p>
+
+  <div style="width:100%;max-width:400px;animation:fadeUp 0.4s ease 0.55s both;">
     <button class="btn btn-y" id="btn-start" onclick="startApp()">Commencer →</button>
   </div>
 </div>
@@ -507,7 +501,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
       <div style="display:inline-block;background:var(--y);color:#000;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:900;padding:5px 16px;border-radius:40px;letter-spacing:0.1em;text-transform:uppercase;">SAM DE LA SOIRÉE</div>
     </div>
     <button class="btn btn-g" onclick="resetDraw()" style="margin-bottom:0.5rem;">Retirer ce prénom et relancer</button>
-    <button class="btn btn-y" onclick="transition('s3','Acte 3','La soirée en images')">Continuer →</button>
+    <button class="btn btn-y" onclick="transitionToNext('s2')">Continuer →</button>
   </div>
 </div>
 
@@ -519,7 +513,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
   <div class="sit-progress" id="sit-progress"></div>
   <div id="sit-card-area" style="width:100%;max-width:400px;"></div>
   <div id="sit-summary-area" style="width:100%;display:none;"></div>
-  <button class="btn btn-y" id="btn-sit-next" style="display:none;" onclick="transition('s4','Acte 4','Le bar de Sam')">Continuer →</button>
+  <button class="btn btn-y" id="btn-sit-next" style="display:none;" onclick="transitionToNext('s3')">Continuer →</button>
 </div>
 
 <!-- S4: BAR DE SAM V2 -->
@@ -570,7 +564,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
   <div class="tip-box" id="bar-tip" style="display:none;"><h4>Accord de saveurs</h4><p id="bar-tip-txt"></p></div>
 
   <!-- Bouton continuer -->
-  <button class="btn btn-y" id="btn-bar-next" style="display:none;" onclick="transition('s5','Acte 5','Ta carte Sam')">Ce mocktail est parfait →</button>
+  <button class="btn btn-y" id="btn-bar-next" style="display:none;" onclick="transitionToNext('s4')">Ce mocktail est parfait →</button>
 </div>
 
 <!-- S5: RÉSULTATS -->
@@ -946,43 +940,72 @@ function showScreen(id){
   else if(id==='s5')initResults();
 }
 
-/* ══ MODE ACCUEIL ══ */
-var APP_MODE='full';
-var MODE_CFG={
-  full:       {screen:'s1',title:'Acte 1',sub:'Quiz identité'},
-  quiz:       {screen:'s1',title:'Acte 1',sub:'Quiz identité'},
-  draw:       {screen:'s2',title:'Acte 2',sub:'Qui est Sam ce soir ?'},
-  situations: {screen:'s3',title:'Acte 3',sub:'La soirée en images'},
-  bar:        {screen:'s4',title:'Acte 4',sub:'Le bar de Sam'}
+/* ══ SÉLECTION DES JEUX ══ */
+var ACT_ORDER = ['s1','s2','s3','s4'];
+var ACT_LABELS = {
+  s1:{title:'Acte 1',sub:'Quiz identité'},
+  s2:{title:'Acte 2',sub:'Qui est Sam ce soir ?'},
+  s3:{title:'Acte 3',sub:'La soirée en images'},
+  s4:{title:'Acte 4',sub:'Le bar de Sam'},
+  s5:{title:'Acte 5',sub:'Ta carte Sam'}
 };
+var SELECTED_ACTS = ['s1','s2','s3','s4'];
 
-function selectMode(mode,el){
-  APP_MODE=mode;
-  /* Retirer mc-active de toutes les cards */
-  document.querySelectorAll('.mode-feat,.mode-card').forEach(function(c){c.classList.remove('mc-active');});
-  el.classList.add('mc-active');
-  /* Mettre à jour le libellé du bouton */
-  var labels={full:'Commencer l\'expérience →',quiz:'Lancer le quiz →',draw:'Lancer la roue →',situations:'Voir les situations →',bar:'Aller au bar →'};
-  document.getElementById('btn-start').textContent=labels[mode]||'Commencer →';
+function toggleAct(id, el){
+  var idx = SELECTED_ACTS.indexOf(id);
+  if(idx >= 0){ SELECTED_ACTS.splice(idx,1); el.classList.remove('mc-sel'); }
+  else { SELECTED_ACTS.push(id); el.classList.add('mc-sel'); }
+  updateSelAllBtn();
+  document.getElementById('err-acts').textContent='';
+}
+
+function toggleAllActs(){
+  if(SELECTED_ACTS.length === ACT_ORDER.length){
+    SELECTED_ACTS=[];
+    ACT_ORDER.forEach(function(id){ var c=document.getElementById('mc-'+id); if(c)c.classList.remove('mc-sel'); });
+  } else {
+    SELECTED_ACTS=ACT_ORDER.slice();
+    ACT_ORDER.forEach(function(id){ var c=document.getElementById('mc-'+id); if(c)c.classList.add('mc-sel'); });
+  }
+  updateSelAllBtn();
+}
+
+function updateSelAllBtn(){
+  var btn=document.getElementById('btn-sel-all');
+  if(!btn) return;
+  btn.textContent = SELECTED_ACTS.length===ACT_ORDER.length ? 'Tout désélectionner' : 'Tout sélectionner';
+}
+
+function nextAct(currentId){
+  var idx = ACT_ORDER.indexOf(currentId);
+  for(var i=idx+1; i<ACT_ORDER.length; i++){
+    if(SELECTED_ACTS.indexOf(ACT_ORDER[i]) >= 0) return ACT_ORDER[i];
+  }
+  return 's5';
+}
+
+function transitionToNext(currentId){
+  var next = nextAct(currentId);
+  var lbl = ACT_LABELS[next];
+  transition(next, lbl.title, lbl.sub);
 }
 
 /* ══ START ══ */
 function startApp(){
   var v=document.getElementById('inp-prenom').value.trim();
-  if(!v){
-    document.getElementById('err0').textContent='Entre ton prénom pour commencer.';
-    document.getElementById('inp-prenom').focus();
-    return;
-  }
+  if(!v){ document.getElementById('err0').textContent='Entre ton prénom pour commencer.'; document.getElementById('inp-prenom').focus(); return; }
+  if(SELECTED_ACTS.length===0){ document.getElementById('err-acts').textContent='Sélectionne au moins un jeu.'; return; }
   document.getElementById('err0').textContent='';
+  document.getElementById('err-acts').textContent='';
   S.prenom=v;
   NAV_ACTES.forEach(function(a){a.unlocked=false;});
-  var cfg=MODE_CFG[APP_MODE]||MODE_CFG.full;
-  unlockNav(cfg.screen);
-  showNavBar();
-  showScoreHud();
-  updateScoreHud();
-  transition(cfg.screen,cfg.title,cfg.sub);
+  /* Déverrouiller uniquement les actes sélectionnés */
+  SELECTED_ACTS.forEach(function(id){ unlockNav(id); });
+  unlockNav('s5');
+  showNavBar(); showScoreHud(); updateScoreHud();
+  var first = SELECTED_ACTS.slice().sort(function(a,b){ return ACT_ORDER.indexOf(a)-ACT_ORDER.indexOf(b); })[0];
+  var lbl = ACT_LABELS[first];
+  transition(first, lbl.title, lbl.sub);
 }
 document.getElementById('inp-prenom').addEventListener('keydown',function(e){if(e.key==='Enter')startApp();});
 
@@ -1051,7 +1074,7 @@ function showQuizStat(txt){
   }
   requestAnimationFrame(fadeIn);
 }
-function advanceQ(){if(S.qIdx+1>=QUIZ.length)transition('s2','Acte 2','Qui est Sam ce soir ?');else{S.qIdx++;renderQ();}}
+function advanceQ(){if(S.qIdx+1>=QUIZ.length)transitionToNext('s1');else{S.qIdx++;renderQ();}}
 function animScore(from,to,elId,suf){var el=document.getElementById(elId),t0=performance.now(),dur=400;function st(ts){var p=Math.min((ts-t0)/dur,1);el.textContent=Math.round(from+p*(to-from))+(suf||'');el.style.transform=p<1?'scale(1.15)':'scale(1)';if(p<1)requestAnimationFrame(st);else el.style.transform='scale(1)';}requestAnimationFrame(st);}
 function flashScore(text){var el=document.getElementById('score-flash');el.textContent=text;el.style.color='var(--y)';el.style.opacity='0';el.style.transform='translate(-50%,-50%) scale(0.5)';var t0=performance.now();function si(ts){var p=Math.min((ts-t0)/150,1);el.style.opacity=p;el.style.transform='translate(-50%,-50%) scale('+(0.5+p*0.8)+')';if(p<1){requestAnimationFrame(si);}else{setTimeout(function(){var t1=performance.now();function fo(ts2){var p2=Math.min((ts2-t1)/300,1);el.style.opacity=1-p2;if(p2<1)requestAnimationFrame(fo);}requestAnimationFrame(fo);},400);}}requestAnimationFrame(si);}
 
@@ -1630,12 +1653,11 @@ function restart(){
   NAV_ACTES.forEach(function(a){a.unlocked=false;});
   hideNavBar();hideScoreHud();
   document.getElementById('inp-prenom').value='';
-  /* Remettre la sélection de mode à "full" */
-  APP_MODE='full';
-  document.querySelectorAll('.mode-feat,.mode-card').forEach(function(c){c.classList.remove('mc-active');});
-  var fc=document.getElementById('mc-full');
-  if(fc)fc.classList.add('mc-active');
+  SELECTED_ACTS=ACT_ORDER.slice();
+  ACT_ORDER.forEach(function(id){ var c=document.getElementById('mc-'+id); if(c)c.classList.add('mc-sel'); });
+  updateSelAllBtn();
   document.getElementById('btn-start').textContent='Commencer →';
+  document.getElementById('err-acts').textContent='';
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
   document.getElementById('s0').classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
