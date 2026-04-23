@@ -299,7 +299,9 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
       <span style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--y);" id="drive-score-display">0</span>
       <div id="drive-lives" style="font-size:20px;">❤️❤️❤️</div>
     </div>
-    <canvas id="drive-canvas" width="360" height="500" style="border-radius:16px;display:block;touch-action:none;"></canvas>
+    <div id="drive-canvas-wrap" style="width:360px;height:500px;border-radius:16px;overflow:hidden;position:relative;">
+      <canvas id="drive-canvas" style="display:block;touch-action:none;width:360px;height:500px;"></canvas>
+    </div>
     <p style="font-size:12px;color:var(--muted2);text-align:center;margin-top:8px;">⬅ ➡ ou swipe pour changer de voie</p>
   </div>
   <div id="drive-over" style="display:none;width:100%;max-width:400px;flex-direction:column;align-items:center;">
@@ -402,6 +404,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 /* ══ DATA QUIZ ══ */
 /* Banque de 15 questions — 5 tirées aléatoirement à chaque session */
@@ -605,184 +608,579 @@ function animScore(from,to,elId,suf){var el=document.getElementById(elId),t0=per
 function flashScore(text){var el=document.getElementById('score-flash');el.textContent=text;el.style.color='var(--y)';el.style.opacity='0';el.style.transform='translate(-50%,-50%) scale(0.5)';var t0=performance.now();function si(ts){var p=Math.min((ts-t0)/150,1);el.style.opacity=p;el.style.transform='translate(-50%,-50%) scale('+(0.5+p*0.8)+')';if(p<1){requestAnimationFrame(si);}else{setTimeout(function(){var t1=performance.now();function fo(ts2){var p2=Math.min((ts2-t1)/300,1);el.style.opacity=1-p2;if(p2<1)requestAnimationFrame(fo);}requestAnimationFrame(fo);},400);}}requestAnimationFrame(si);}
 
 
-/* ══ SAM AU VOLANT ══ */
-var LANE_POS=[60,180,300];
-var DG={canvas:null,ctx:null,raf:null,running:false,W:360,H:500,lane:1,targetLane:1,carX:180,carY:380,carH:80,speed:3,maxSpeed:10,frame:0,score:0,lives:3,objects:[],spawnTimer:0,spawnInterval:60,invincible:0,touchStartX:0};
+/* ══ SAM AU VOLANT — 3D (Three.js) ══ */
+var LANE_POS = [60, 180, 300]; /* positions logiques X pour collisions */
+var LANE_Z   = [-1.8, 0, 1.8]; /* positions Z Three.js (gauche→droite) */
+
+var DG = {
+  renderer:null, scene:null, camera:null, raf:null, running:false,
+  lane:1, targetLane:1, carZ:0, carZvel:0,
+  speed:0.14, maxSpeed:0.55, frame:0, score:0, lives:3,
+  objects:[], spawnTimer:0, spawnInterval:55, invincible:0, touchStartX:0,
+  level:1, nextLevelFrame:400,
+  /* meshes */
+  samCar:null, roadLines:[], roadStripes:[],
+  shield:null, shieldActive:false,
+  /* road scroll */
+  roadOffset:0,
+  wheelFL:null,wheelFR:null,wheelRL:null,wheelRR:null
+};
 
 function initDriveScreen(){
   document.getElementById('drive-intro').style.display='flex';
   document.getElementById('drive-game').style.display='none';
   document.getElementById('drive-over').style.display='none';
   S.driveScore=0;
+  /* Nettoyer Three.js si déjà initialisé */
+  if(DG.renderer){ DG.renderer.dispose(); DG.renderer=null; }
 }
 
 function startDriveGame(){
   document.getElementById('drive-intro').style.display='none';
   document.getElementById('drive-game').style.display='flex';
   document.getElementById('drive-over').style.display='none';
-  DG.canvas=document.getElementById('drive-canvas');
-  DG.ctx=DG.canvas.getContext('2d');
-  DG.lane=1;DG.targetLane=1;DG.carX=LANE_POS[1];
-  DG.speed=3;DG.frame=0;DG.score=0;DG.lives=3;
-  DG.objects=[];DG.spawnTimer=0;DG.spawnInterval=60;DG.invincible=0;
+
+  /* Reset état */
+  DG.lane=1; DG.targetLane=1; DG.carZ=LANE_Z[1]; DG.carZvel=0;
+  DG.speed=0.12; DG.frame=0; DG.score=0; DG.lives=3;
+  DG.objects=[]; DG.spawnTimer=0; DG.spawnInterval=55; DG.invincible=0; DG.level=1; DG.nextLevelFrame=400;
+  DG.roadOffset=0; DG.running=true;
+
   updateDriveLives();
   document.getElementById('drive-score-display').textContent='0';
-  DG.canvas.addEventListener('touchstart',onDriveTouchStart,{passive:true});
-  DG.canvas.addEventListener('touchend',onDriveTouchEnd,{passive:true});
-  document.addEventListener('keydown',onDriveKey);
-  if(DG.raf)cancelAnimationFrame(DG.raf);
-  DG.running=true;
+
+  /* Assigner DG.canvas AVANT tout */
+  DG.canvas = document.getElementById('drive-canvas');
+
+  initThree();
+
+  DG.canvas.addEventListener('touchstart', onDriveTouchStart, {passive:true});
+  DG.canvas.addEventListener('touchend',   onDriveTouchEnd,   {passive:true});
+  document.addEventListener('keydown', onDriveKey);
+
+  if(DG.raf) cancelAnimationFrame(DG.raf);
   driveLoop();
+}
+
+/* ── INIT THREE.JS ── */
+function initThree(){
+  var W=360, H=500;
+
+  /* Renderer */
+  DG.renderer = new THREE.WebGLRenderer({canvas: DG.canvas, antialias:true});
+  DG.renderer.setSize(W, H);
+  DG.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  DG.renderer.shadowMap.enabled = true;
+  DG.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  /* Scene */
+  DG.scene = new THREE.Scene();
+  DG.scene.background = new THREE.Color(0x07070F);
+  DG.scene.fog = new THREE.Fog(0x07070F, 18, 35);
+
+  /* Camera — vue plongeante à 45° */
+  DG.camera = new THREE.PerspectiveCamera(55, W/H, 0.1, 100);
+  DG.camera.position.set(0, 7, 8);
+  DG.camera.lookAt(0, 0, -4);
+
+  /* Lumières */
+  var ambient = new THREE.AmbientLight(0xffffff, 0.5);
+  DG.scene.add(ambient);
+
+  var sun = new THREE.DirectionalLight(0xffffff, 1.2);
+  sun.position.set(3, 10, 5);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(512,512);
+  DG.scene.add(sun);
+
+  /* Phares de la voiture SAM */
+  var headlight = new THREE.SpotLight(0xFFEF88, 2, 12, Math.PI/6, 0.5);
+  headlight.position.set(0, 3, 6);
+  headlight.target.position.set(0, 0, -2);
+  DG.scene.add(headlight);
+  DG.scene.add(headlight.target);
+
+  /* Route */
+  buildRoad();
+
+  /* Voiture SAM */
+  DG.samCar = buildSamCar();
+  DG.samCar.position.set(LANE_Z[1], 0.45, 3.5);
+  DG.scene.add(DG.samCar);
+
+  /* Avatar SAM sur le toit */
+  var avatar = buildSamAvatar();
+  avatar.position.set(0, 1.05, -0.1); /* sur le toit */
+  DG.samCar.add(avatar);
+  DG.samCar.userData.avatar = avatar;
+
+  /* Bouclier (ring) */
+  var shieldGeo = new THREE.TorusGeometry(1.1, 0.06, 8, 32);
+  var shieldMat = new THREE.MeshBasicMaterial({color:0xFFCF00, transparent:true, opacity:0.7});
+  DG.shield = new THREE.Mesh(shieldGeo, shieldMat);
+  DG.shield.rotation.x = Math.PI/2;
+  DG.shield.visible = false;
+  DG.samCar.add(DG.shield);
+}
+
+/* ── ROUTE ── */
+function buildRoad(){
+  /* Asphalte */
+  var roadGeo = new THREE.PlaneGeometry(6.5, 80);
+  var roadMat = new THREE.MeshLambertMaterial({color:0x181828});
+  var road = new THREE.Mesh(roadGeo, roadMat);
+  road.rotation.x = -Math.PI/2;
+  road.position.y = -0.01;
+  road.receiveShadow = true;
+  DG.scene.add(road);
+
+  /* Bandes latérales jaunes */
+  [-3.15, 3.15].forEach(function(zx){
+    var bGeo = new THREE.PlaneGeometry(0.18, 80);
+    var bMat = new THREE.MeshBasicMaterial({color:0xFFCF00, transparent:true, opacity:0.6});
+    var b = new THREE.Mesh(bGeo, bMat);
+    b.rotation.x = -Math.PI/2;
+    b.position.set(zx, 0.005, 0);
+    DG.scene.add(b);
+  });
+
+  /* Lignes de voie pointillées (groupes de segments) */
+  DG.roadStripes = [];
+  [-1.05, 1.05].forEach(function(zx){
+    var group = new THREE.Group();
+    for(var i=0; i<20; i++){
+      var sGeo = new THREE.PlaneGeometry(0.08, 1.2);
+      var sMat = new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.25});
+      var s = new THREE.Mesh(sGeo, sMat);
+      s.rotation.x = -Math.PI/2;
+      s.position.set(zx, 0.006, -i*3.5);
+      group.add(s);
+    }
+    DG.scene.add(group);
+    DG.roadStripes.push({group:group, zx:zx});
+  });
+
+  /* Bordures de route */
+  [-3.5, 3.5].forEach(function(zx){
+    var cGeo = new THREE.BoxGeometry(0.3, 0.2, 80);
+    var cMat = new THREE.MeshLambertMaterial({color:0x0d0d1a});
+    var curb = new THREE.Mesh(cGeo, cMat);
+    curb.position.set(zx, 0.1, 0);
+    DG.scene.add(curb);
+  });
+}
+
+/* ── VOITURE SAM ── */
+function buildSamCar(){
+  var group = new THREE.Group();
+
+  /* Carrosserie */
+  var bodyGeo = new THREE.BoxGeometry(1.6, 0.5, 2.8);
+  var bodyMat = new THREE.MeshLambertMaterial({color:0xFFCF00});
+  var body = new THREE.Mesh(bodyGeo, bodyMat);
+  body.position.y = 0.35;
+  body.castShadow = true;
+  group.add(body);
+
+  /* Toit */
+  var roofGeo = new THREE.BoxGeometry(1.3, 0.42, 1.6);
+  var roofMat = new THREE.MeshLambertMaterial({color:0xE6B800});
+  var roof = new THREE.Mesh(roofGeo, roofMat);
+  roof.position.set(0, 0.81, -0.1);
+  group.add(roof);
+
+  /* Pare-brise (bleu foncé) */
+  var windGeo = new THREE.BoxGeometry(1.25, 0.35, 0.06);
+  var windMat = new THREE.MeshLambertMaterial({color:0x003366, transparent:true, opacity:0.7});
+  var wind = new THREE.Mesh(windGeo, windMat);
+  wind.position.set(0, 0.82, 0.71);
+  group.add(wind);
+
+  /* Logo SAM (visage blanc) sur le capot */
+  var faceGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.05, 16);
+  var faceMat = new THREE.MeshLambertMaterial({color:0xffffff});
+  var face = new THREE.Mesh(faceGeo, faceMat);
+  face.position.set(0, 0.63, 0.9);
+  group.add(face);
+
+  /* Yeux SAM */
+  var eyeGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.06, 10);
+  var eyeMat = new THREE.MeshBasicMaterial({color:0x000000});
+  [-0.1, 0.1].forEach(function(ez){
+    var eye = new THREE.Mesh(eyeGeo, eyeMat);
+    eye.position.set(0.08, 0.67, 0.9+ez);
+    group.add(eye);
+  });
+
+  /* Phares avant */
+  var lightGeo = new THREE.BoxGeometry(0.28, 0.12, 0.06);
+  var lightMat = new THREE.MeshBasicMaterial({color:0xFFEF88});
+  [-0.55, 0.55].forEach(function(lx){
+    var light = new THREE.Mesh(lightGeo, lightMat);
+    light.position.set(lx, 0.35, 1.43);
+    group.add(light);
+    /* Halo point light */
+    var pl = new THREE.PointLight(0xFFEF88, 0.6, 3);
+    pl.position.set(lx, 0.35, 1.5);
+    group.add(pl);
+  });
+
+  /* Feux arrière rouges */
+  var rearMat = new THREE.MeshBasicMaterial({color:0xFF2222});
+  [-0.55, 0.55].forEach(function(lx){
+    var rear = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.1, 0.05), rearMat);
+    rear.position.set(lx, 0.35, -1.43);
+    group.add(rear);
+  });
+
+  /* Roues */
+  var wheelGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.22, 14);
+  var wheelMat = new THREE.MeshLambertMaterial({color:0x111111});
+  var wheelPositions = [[-0.9,0.28,0.95],[ 0.9,0.28,0.95],[-0.9,0.28,-0.95],[ 0.9,0.28,-0.95]];
+  var wheels = [];
+  wheelPositions.forEach(function(wp){
+    var w = new THREE.Mesh(wheelGeo, wheelMat);
+    w.rotation.z = Math.PI/2;
+    w.position.set(wp[0], wp[1], wp[2]);
+    group.add(w);
+    wheels.push(w);
+  });
+  group.userData.wheels = wheels;
+
+  return group;
+}
+
+/* ── AVATAR SAM 3D ── */
+function buildSamAvatar(){
+  var group = new THREE.Group();
+
+  /* Corps */
+  var bodyGeo = new THREE.BoxGeometry(0.32, 0.38, 0.2);
+  var bodyMat = new THREE.MeshLambertMaterial({color:0x00B0FF}); /* bleu SAM */
+  var body = new THREE.Mesh(bodyGeo, bodyMat);
+  body.position.y = 0.19;
+  group.add(body);
+
+  /* Tête — sphère blanche (logo SAM) */
+  var headGeo = new THREE.SphereGeometry(0.18, 14, 14);
+  var headMat = new THREE.MeshLambertMaterial({color:0xffffff});
+  var head = new THREE.Mesh(headGeo, headMat);
+  head.position.y = 0.53;
+  group.add(head);
+
+  /* Contour tête (cercle noir) */
+  var ringGeo = new THREE.TorusGeometry(0.18, 0.022, 8, 24);
+  var ringMat = new THREE.MeshBasicMaterial({color:0x000000});
+  var ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.position.y = 0.53;
+  group.add(ring);
+
+  /* Œil gauche — cercle */
+  var eOutGeo = new THREE.TorusGeometry(0.055, 0.016, 6, 16);
+  var eOutMat = new THREE.MeshBasicMaterial({color:0x000000});
+
+  /* Œil gauche */
+  var eL = new THREE.Mesh(eOutGeo, eOutMat);
+  eL.position.set(-0.065, 0.555, 0.16);
+  group.add(eL);
+  var eLp = new THREE.Mesh(new THREE.SphereGeometry(0.022,8,8), new THREE.MeshBasicMaterial({color:0x000000}));
+  eLp.position.set(-0.065, 0.555, 0.175);
+  group.add(eLp);
+
+  /* Œil droit */
+  var eR = new THREE.Mesh(eOutGeo, eOutMat);
+  eR.position.set(0.065, 0.555, 0.16);
+  group.add(eR);
+  var eRp = new THREE.Mesh(new THREE.SphereGeometry(0.022,8,8), new THREE.MeshBasicMaterial({color:0x000000}));
+  eRp.position.set(0.065, 0.555, 0.175);
+  group.add(eRp);
+
+  /* Sourire — arc de tore */
+  var smileGeo = new THREE.TorusGeometry(0.06, 0.014, 6, 12, Math.PI);
+  var smileMat = new THREE.MeshBasicMaterial({color:0x000000});
+  var smile = new THREE.Mesh(smileGeo, smileMat);
+  smile.position.set(0, 0.495, 0.165);
+  smile.rotation.z = Math.PI; /* arc vers le bas = sourire */
+  group.add(smile);
+
+  /* Bras gauche */
+  var armGeo = new THREE.BoxGeometry(0.1, 0.28, 0.1);
+  var armMat = new THREE.MeshLambertMaterial({color:0x0090DD});
+  var armL = new THREE.Mesh(armGeo, armMat);
+  armL.position.set(-0.22, 0.18, 0);
+  armL.rotation.z = 0.3;
+  group.add(armL);
+  group.userData.armL = armL;
+
+  /* Bras droit */
+  var armR = new THREE.Mesh(armGeo, armMat);
+  armR.position.set(0.22, 0.18, 0);
+  armR.rotation.z = -0.3;
+  group.add(armR);
+  group.userData.armR = armR;
+
+  /* Jambes */
+  var legGeo = new THREE.BoxGeometry(0.11, 0.22, 0.12);
+  var legMat = new THREE.MeshLambertMaterial({color:0x0D0D1A});
+  [-0.08, 0.08].forEach(function(lx){
+    var leg = new THREE.Mesh(legGeo, legMat);
+    leg.position.set(lx, -0.02, 0);
+    group.add(leg);
+  });
+
+  return group;
+}
+
+/* ── OBSTACLES & BONUS ── */
+function buildObstacle(type){
+  var group = new THREE.Group();
+
+  if(type==='car'){
+    /* Voiture ivre rouge */
+    var bMat = new THREE.MeshLambertMaterial({color:0xCC2222});
+    var body = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.45, 2.6), bMat);
+    body.position.y=0.32; body.castShadow=true; group.add(body);
+    var roof = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.38, 1.4), new THREE.MeshLambertMaterial({color:0x991111}));
+    roof.position.set(0,0.73,-0.1); group.add(roof);
+    var wMat = new THREE.MeshLambertMaterial({color:0x111111});
+    [[-0.85,0.28,0.85],[0.85,0.28,0.85],[-0.85,0.28,-0.85],[0.85,0.28,-0.85]].forEach(function(wp){
+      var w=new THREE.Mesh(new THREE.CylinderGeometry(0.26,0.26,0.2,12),wMat);w.rotation.z=Math.PI/2;w.position.set(wp[0],wp[1],wp[2]);group.add(w);
+    });
+    /* Emoji 🍺 comme sprite billboard */
+    group.userData.wobble = true;
+
+  } else if(type==='mocktail'){
+    /* Mocktail — sphère cyan brillante */
+    var mGeo = new THREE.SphereGeometry(0.38, 12, 12);
+    var mMat = new THREE.MeshLambertMaterial({color:0x00B0FF, emissive:0x003355});
+    var sphere = new THREE.Mesh(mGeo, mMat);
+    sphere.position.y = 0.6;
+    group.add(sphere);
+    /* Halo */
+    var halo = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 8), new THREE.MeshBasicMaterial({color:0x00B0FF, transparent:true, opacity:0.18, wireframe:false}));
+    halo.position.y = 0.6;
+    group.add(halo);
+    group.userData.spin = true;
+    group.userData.float = true;
+
+  } else if(type==='star'){
+    /* Étoile SAM — octaèdre jaune */
+    var sGeo = new THREE.OctahedronGeometry(0.42);
+    var sMat = new THREE.MeshLambertMaterial({color:0xFFCF00, emissive:0x443300});
+    var star = new THREE.Mesh(sGeo, sMat);
+    star.position.y = 0.65;
+    group.add(star);
+    var sHalo = new THREE.Mesh(new THREE.SphereGeometry(0.6,8,8), new THREE.MeshBasicMaterial({color:0xFFCF00, transparent:true, opacity:0.12}));
+    sHalo.position.y = 0.65;
+    group.add(sHalo);
+    group.userData.spin = true;
+    group.userData.float = true;
+
+  } else {
+    /* Bouteille — cylindre rouge-rose */
+    var btGeo = new THREE.CylinderGeometry(0.14, 0.18, 0.8, 10);
+    var btMat = new THREE.MeshLambertMaterial({color:0xDC143C, transparent:true, opacity:0.85});
+    var bottle = new THREE.Mesh(btGeo, btMat);
+    bottle.position.y = 0.55;
+    group.add(bottle);
+    var capGeo = new THREE.CylinderGeometry(0.06, 0.08, 0.18, 8);
+    var cap = new THREE.Mesh(capGeo, new THREE.MeshLambertMaterial({color:0xFFD700}));
+    cap.position.y = 1.05;
+    group.add(cap);
+    group.userData.wobble = true;
+  }
+
+  return group;
+}
+
+/* ── BOUCLE DE JEU ── */
+function driveLoop(){
+  if(!DG.running) return;
+  DG.frame++;
+
+  /* Score passif */
+  DG.score += Math.floor(DG.speed * 3 * (1 + DG.level * 0.05));
+  document.getElementById('drive-score-display').textContent = DG.score;
+
+  /* Accélération progressive par paliers — chaque niveau = +vitesse +fréquence spawn */
+  if(DG.frame >= DG.nextLevelFrame && DG.speed < DG.maxSpeed){
+    DG.level++;
+    /* Vitesse : +8% par niveau, plafonné à maxSpeed */
+    DG.speed = Math.min(DG.maxSpeed, Math.round(DG.speed * 1.08 * 1000)/1000);
+    /* Spawn plus fréquent mais jamais inférieur à 22 frames */
+    DG.spawnInterval = Math.max(22, DG.spawnInterval - 3);
+    /* Prochain palier de plus en plus long (courbe douce) */
+    DG.nextLevelFrame = DG.frame + Math.max(200, 400 - DG.level * 20);
+    /* Flash niveau */
+    driveFlash('Niveau ' + DG.level + ' 🔥');
+  }
+
+  /* Spawn */
+  DG.spawnTimer++;
+  if(DG.spawnTimer >= DG.spawnInterval){
+    spawnDriveObj3D();
+    DG.spawnTimer = 0;
+    DG.spawnInterval = Math.max(28, DG.spawnInterval - 0.4);
+  }
+
+  /* Mouvement voiture — lerp Z */
+  var targetZ = LANE_Z[DG.targetLane];
+  var diff = targetZ - DG.carZ;
+  if(Math.abs(diff) < 0.01){
+    DG.carZ = targetZ;
+    DG.lane = DG.targetLane;
+  } else {
+    DG.carZ += diff * 0.14;
+  }
+  DG.samCar.position.x = DG.carZ; /* carZ = position latérale X */
+
+  /* Légère inclinaison latérale pendant changement de voie */
+  DG.samCar.rotation.z = diff * 0.18;
+
+  /* Rotation des roues */
+  if(DG.samCar.userData.wheels){
+    DG.samCar.userData.wheels.forEach(function(w){ w.rotation.x += DG.speed * 0.8; });
+  }
+  /* Animation bras avatar SAM */
+  if(DG.samCar.userData.avatar){
+    var av = DG.samCar.userData.avatar;
+    var swing = Math.sin(DG.frame * 0.18) * 0.35;
+    if(av.userData.armL) av.userData.armL.rotation.z = 0.3 + swing;
+    if(av.userData.armR) av.userData.armR.rotation.z = -0.3 - swing;
+    /* Légère oscillation tête */
+    var headMesh = av.children[0];
+    if(av.children[1]) av.children[1].position.y = 0.53 + Math.sin(DG.frame*0.1)*0.015;
+  }
+
+  /* Bouclier */
+  if(DG.shield){
+    DG.shield.visible = DG.invincible > 0;
+    DG.shield.rotation.z += 0.05;
+    if(DG.shield.material) DG.shield.material.opacity = 0.4 + Math.sin(DG.frame*0.2)*0.3;
+  }
+
+  /* Déplacer les objets (ils avancent vers la caméra = Z+ ) */
+  for(var i = DG.objects.length-1; i>=0; i--){
+    var o = DG.objects[i];
+    o.mesh.position.z += DG.speed * 2.5;
+
+    /* Animations spin/float */
+    if(o.mesh.userData.spin) o.mesh.children[0].rotation.y += 0.05;
+    if(o.mesh.userData.float) o.mesh.children[0].position.y = 0.55 + Math.sin(DG.frame*0.08 + i)*0.12;
+    if(o.mesh.userData.wobble) o.mesh.rotation.y = Math.sin(DG.frame*0.12 + i)*0.12;
+
+    /* Supprimer si sorti */
+    if(o.mesh.position.z > 12){
+      DG.scene.remove(o.mesh);
+      DG.objects.splice(i,1);
+      continue;
+    }
+
+    /* Collisions */
+    if(!o.hit && DG.invincible <= 0){
+      var carZ_pos = 3.5; /* position Z fixe de la voiture */
+      var sameLane = Math.abs(o.lane - DG.targetLane) === 0;
+      var inRange = o.mesh.position.z > carZ_pos - 2.5 && o.mesh.position.z < carZ_pos + 1.5;
+      if(sameLane && inRange){
+        o.hit = true;
+        if(o.type==='mocktail'){
+          DG.score+=10; DG.speed=Math.max(0.1,DG.speed-0.04);
+          DG.scene.remove(o.mesh); DG.objects.splice(i,1);
+          driveFlash('+10 🍹');
+        } else if(o.type==='star'){
+          DG.score+=25; DG.invincible=100;
+          DG.scene.remove(o.mesh); DG.objects.splice(i,1);
+          driveFlash('+25 ⭐');
+        } else {
+          DG.lives--; updateDriveLives(); DG.invincible=80;
+          DG.scene.remove(o.mesh); DG.objects.splice(i,1);
+          /* Flash rouge caméra */
+          DG.scene.background = new THREE.Color(0x330000);
+          setTimeout(function(){if(DG.scene)DG.scene.background=new THREE.Color(0x07070F);},120);
+          if(DG.lives<=0){ driveGameOver3D(); return; }
+        }
+      }
+    }
+  }
+
+  if(DG.invincible>0) DG.invincible--;
+
+  /* Scroll des bandes de route */
+  DG.roadOffset = (DG.roadOffset + DG.speed) % 3.5;
+  DG.roadStripes.forEach(function(sg){
+    sg.group.children.forEach(function(s,i){
+      s.position.z += DG.speed * 2.5;
+      if(s.position.z > 12) s.position.z -= 70;
+    });
+  });
+
+  /* Indicateur vitesse (overlay 2D DOM) */
+  DG.renderer.render(DG.scene, DG.camera);
+  DG.raf = requestAnimationFrame(driveLoop);
+}
+
+function spawnDriveObj3D(){
+  var lane = Math.floor(Math.random()*3);
+  var r = Math.random();
+  /* Plus de voitures ivres aux niveaux élevés */
+  var carProb = Math.min(0.62, 0.42 + DG.level * 0.02);
+  var type = r<carProb?'car': r<(carProb+0.26)?'mocktail': r<(carProb+0.40)?'bottle':'star';
+  var mesh = buildObstacle(type);
+  /* Objets arrivent de Z très négatif (loin devant) et avancent vers la caméra (Z+) */
+  mesh.position.set(LANE_Z[lane], 0, -30);
+  DG.scene.add(mesh);
+  DG.objects.push({type:type, lane:lane, mesh:mesh, hit:false});
 }
 
 function restartDriveGame(){
   DG.running=false;
-  if(DG.raf)cancelAnimationFrame(DG.raf);
+  if(DG.raf) cancelAnimationFrame(DG.raf);
   stopDriveListeners();
+  if(DG.renderer){ DG.renderer.dispose(); DG.renderer=null; }
   document.getElementById('drive-intro').style.display='flex';
   document.getElementById('drive-game').style.display='none';
   document.getElementById('drive-over').style.display='none';
 }
 
-function onDriveTouchStart(e){DG.touchStartX=e.touches[0].clientX;}
+function onDriveTouchStart(e){ DG.touchStartX=e.touches[0].clientX; }
 function onDriveTouchEnd(e){
-  if(!DG.running)return;
+  if(!DG.running) return;
   var dx=e.changedTouches[0].clientX-DG.touchStartX;
-  if(Math.abs(dx)>25){if(dx<0&&DG.targetLane>0)DG.targetLane--;else if(dx>0&&DG.targetLane<2)DG.targetLane++;}
+  if(Math.abs(dx)>25){ if(dx<0&&DG.targetLane>0)DG.targetLane--; else if(dx>0&&DG.targetLane<2)DG.targetLane++; }
 }
 function onDriveKey(e){
-  if(!DG.running)return;
+  if(!DG.running) return;
   if(e.key==='ArrowLeft'&&DG.targetLane>0)DG.targetLane--;
   else if(e.key==='ArrowRight'&&DG.targetLane<2)DG.targetLane++;
 }
 function stopDriveListeners(){
-  if(DG.canvas){DG.canvas.removeEventListener('touchstart',onDriveTouchStart);DG.canvas.removeEventListener('touchend',onDriveTouchEnd);}
+  var cv=document.getElementById('drive-canvas');
+  if(cv){cv.removeEventListener('touchstart',onDriveTouchStart);cv.removeEventListener('touchend',onDriveTouchEnd);}
   document.removeEventListener('keydown',onDriveKey);
-}
-
-function spawnDriveObj(){
-  var l=Math.floor(Math.random()*3);
-  var r=Math.random();
-  var type=r<0.45?'car':r<0.72?'mocktail':r<0.88?'bottle':'star';
-  var small=(type==='mocktail'||type==='star');
-  DG.objects.push({lane:l,y:-90,type:type,h:small?36:72,hit:false});
-}
-
-function driveLoop(){
-  if(!DG.running)return;
-  DG.frame++;
-  DG.score+=Math.floor(DG.speed*0.3);
-  document.getElementById('drive-score-display').textContent=DG.score;
-  if(DG.frame%300===0&&DG.speed<DG.maxSpeed)DG.speed=Math.round((DG.speed+0.4)*10)/10;
-  DG.spawnTimer++;
-  if(DG.spawnTimer>=DG.spawnInterval){spawnDriveObj();DG.spawnTimer=0;DG.spawnInterval=Math.max(28,DG.spawnInterval-0.5);}
-  var targetX=LANE_POS[DG.targetLane],diff=targetX-DG.carX;
-  if(Math.abs(diff)<2){DG.carX=targetX;DG.lane=DG.targetLane;}else{DG.carX+=diff*0.18;}
-  for(var i=0;i<DG.objects.length;i++)DG.objects[i].y+=DG.speed;
-  DG.objects=DG.objects.filter(function(o){return o.y<DG.H+120&&!o.hit;});
-  if(DG.invincible>0){DG.invincible--;}
-  else{
-    for(var j=0;j<DG.objects.length;j++){
-      var o=DG.objects[j];if(o.hit)continue;
-      if(o.lane===DG.targetLane&&o.y+o.h>DG.carY&&o.y<DG.carY+DG.carH){
-        o.hit=true;
-        if(o.type==='mocktail'){DG.score+=10;DG.speed=Math.max(2.5,DG.speed-0.8);driveFlash('+10 🍹');}
-        else if(o.type==='star'){DG.score+=25;DG.invincible=100;driveFlash('+25 ⭐');}
-        else{DG.lives--;updateDriveLives();DG.invincible=80;if(DG.lives<=0){driveGameOver();return;}}
-      }
-    }
-  }
-  drawDriveFrame();
-  DG.raf=requestAnimationFrame(driveLoop);
-}
-
-function drawDriveFrame(){
-  var ctx=DG.ctx,W=DG.W,H=DG.H;
-  ctx.fillStyle='#0A0A16';ctx.fillRect(0,0,W,H);
-  var gL=ctx.createLinearGradient(0,0,30,0);gL.addColorStop(0,'rgba(255,207,0,0.12)');gL.addColorStop(1,'transparent');ctx.fillStyle=gL;ctx.fillRect(0,0,30,H);
-  var gR=ctx.createLinearGradient(W-30,0,W,0);gR.addColorStop(0,'transparent');gR.addColorStop(1,'rgba(255,207,0,0.12)');ctx.fillStyle=gR;ctx.fillRect(W-30,0,30,H);
-  var lOff=(DG.frame*DG.speed)%60;
-  ctx.save();ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=2;ctx.setLineDash([30,30]);ctx.lineDashOffset=-lOff;
-  [120,240].forEach(function(x){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();});
-  ctx.setLineDash([]);ctx.restore();
-  DG.objects.forEach(function(o){drawDriveObj(ctx,o);});
-  drawSamCar(ctx,DG.carX,DG.carY,DG.invincible>0);
-  ctx.fillStyle='rgba(255,207,0,0.45)';ctx.font='bold 13px Arial';ctx.textAlign='right';ctx.fillText('x'+DG.speed.toFixed(1),W-12,22);ctx.textAlign='left';
-}
-
-function drawDriveObj(ctx,o){
-  var x=LANE_POS[o.lane];
-  if(o.type==='car'){
-    var wb=Math.sin(DG.frame*0.15)*4;
-    ctx.save();ctx.translate(x+wb,o.y+36);ctx.rotate(wb*0.02);
-    ctx.fillStyle='#CC2222';ctx.beginPath();ctx.roundRect(-20,-30,40,60,6);ctx.fill();
-    ctx.fillStyle='#991111';ctx.beginPath();ctx.roundRect(-14,-26,28,34,4);ctx.fill();
-    ctx.fillStyle='#111';[[-20,-24],[20,-24],[-20,24],[20,24]].forEach(function(w){ctx.beginPath();ctx.ellipse(w[0],w[1],7,9,0,0,Math.PI*2);ctx.fill();});
-    ctx.fillStyle='rgba(255,80,80,0.9)';ctx.beginPath();ctx.roundRect(-18,22,10,6,2);ctx.fill();ctx.beginPath();ctx.roundRect(8,22,10,6,2);ctx.fill();
-    ctx.font='16px Arial';ctx.textAlign='center';ctx.fillText('🍺',0,-10);ctx.textAlign='left';
-    ctx.restore();
-  } else if(o.type==='mocktail'){
-    ctx.save();ctx.translate(x,o.y+18);
-    ctx.beginPath();ctx.arc(0,0,22,0,Math.PI*2);ctx.fillStyle='rgba(0,176,255,0.15)';ctx.fill();ctx.strokeStyle='rgba(0,176,255,0.6)';ctx.lineWidth=1.5;ctx.stroke();
-    ctx.font='26px Arial';ctx.textAlign='center';ctx.fillText('🍹',0,9);ctx.textAlign='left';ctx.restore();
-  } else if(o.type==='star'){
-    var pulse=1+Math.sin(DG.frame*0.1)*0.1;
-    ctx.save();ctx.translate(x,o.y+18);ctx.scale(pulse,pulse);
-    ctx.beginPath();ctx.arc(0,0,20,0,Math.PI*2);ctx.fillStyle='rgba(255,207,0,0.2)';ctx.fill();ctx.strokeStyle='rgba(255,207,0,0.8)';ctx.lineWidth=1.5;ctx.stroke();
-    ctx.font='22px Arial';ctx.textAlign='center';ctx.fillText('⭐',0,8);ctx.textAlign='left';ctx.restore();
-  } else {
-    ctx.save();ctx.translate(x,o.y+18);
-    ctx.beginPath();ctx.arc(0,0,18,0,Math.PI*2);ctx.fillStyle='rgba(255,79,79,0.12)';ctx.fill();
-    ctx.font='22px Arial';ctx.textAlign='center';ctx.fillText('🍾',0,8);ctx.textAlign='left';ctx.restore();
-  }
-}
-
-function drawSamCar(ctx,x,y,shield){
-  ctx.save();ctx.translate(x,y+40);
-  /* Bouclier */
-  if(shield){var sp=1+Math.sin(DG.frame*0.2)*0.05;ctx.beginPath();ctx.arc(0,0,38*sp,0,Math.PI*2);ctx.strokeStyle='rgba(255,207,0,0.7)';ctx.lineWidth=2.5;ctx.stroke();ctx.fillStyle='rgba(255,207,0,0.07)';ctx.fill();}
-  /* Carrosserie jaune SAM */
-  ctx.fillStyle=shield?'#FFE040':'#FFCF00';ctx.beginPath();ctx.roundRect(-20,-34,40,64,6);ctx.fill();
-  /* Toit */
-  ctx.fillStyle='#E6B800';ctx.beginPath();ctx.roundRect(-14,-30,28,36,4);ctx.fill();
-  /* Visage SAM sur le toit : cercle blanc */
-  ctx.fillStyle='white';ctx.beginPath();ctx.arc(0,-12,10,0,Math.PI*2);ctx.fill();
-  ctx.strokeStyle='black';ctx.lineWidth=1.5;ctx.stroke();
-  /* Œil gauche */
-  ctx.strokeStyle='black';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(-3.5,-13,3.5,0,Math.PI*2);ctx.stroke();
-  ctx.fillStyle='black';ctx.beginPath();ctx.arc(-3.5,-13,1,0,Math.PI*2);ctx.fill();
-  /* Œil droit */
-  ctx.beginPath();ctx.arc(3.5,-13,3.5,0,Math.PI*2);ctx.stroke();
-  ctx.fillStyle='black';ctx.beginPath();ctx.arc(3.5,-13,1,0,Math.PI*2);ctx.fill();
-  /* Sourire */
-  ctx.beginPath();ctx.arc(0,-12,4.5,0.3,Math.PI-0.3);ctx.strokeStyle='black';ctx.lineWidth=1.2;ctx.stroke();
-  /* Roues */
-  ctx.fillStyle='#111';[[-21,-22],[21,-22],[-21,22],[21,22]].forEach(function(w){ctx.beginPath();ctx.ellipse(w[0],w[1],7,9,0,0,Math.PI*2);ctx.fill();});
-  /* Phares avant */
-  ctx.fillStyle='rgba(255,240,100,0.9)';ctx.beginPath();ctx.roundRect(-18,-35,10,5,2);ctx.fill();ctx.beginPath();ctx.roundRect(8,-35,10,5,2);ctx.fill();
-  ctx.restore();
 }
 
 var _dFEl=null;
 function driveFlash(txt){
-  if(!_dFEl){_dFEl=document.createElement('div');_dFEl.style.cssText='position:absolute;top:35%;left:50%;transform:translate(-50%,-50%);font-family:Barlow Condensed,sans-serif;font-size:26px;font-weight:900;color:#FFCF00;pointer-events:none;z-index:50;text-shadow:0 0 20px rgba(255,207,0,0.8);';var dg=document.getElementById('drive-game');dg.style.position='relative';dg.appendChild(_dFEl);}
+  if(!_dFEl){_dFEl=document.createElement('div');_dFEl.style.cssText='position:absolute;top:35%;left:50%;transform:translate(-50%,-50%);font-family:Barlow Condensed,sans-serif;font-size:26px;font-weight:900;color:#FFCF00;pointer-events:none;z-index:50;text-shadow:0 0 20px rgba(255,207,0,0.8);';var dg=document.getElementById('drive-canvas-wrap');dg.style.position='relative';dg.appendChild(_dFEl);}
   _dFEl.textContent=txt;_dFEl.style.opacity='1';_dFEl.style.transform='translate(-50%,-50%) scale(1)';
   var t0=performance.now();
   function a(ts){var p=Math.min((ts-t0)/800,1);_dFEl.style.opacity=(1-p).toString();_dFEl.style.transform='translate(-50%,'+((-50)-p*30)+'%) scale('+(1+p*0.3)+')';if(p<1)requestAnimationFrame(a);}
   requestAnimationFrame(a);
 }
-function updateDriveLives(){var h=['','❤️','❤️❤️','❤️❤️❤️'];document.getElementById('drive-lives').textContent=h[Math.max(0,DG.lives)];}
-function driveGameOver(){
-  DG.running=false;if(DG.raf)cancelAnimationFrame(DG.raf);stopDriveListeners();
+
+function updateDriveLives(){ var h=['','❤️','❤️❤️','❤️❤️❤️']; document.getElementById('drive-lives').textContent=h[Math.max(0,DG.lives)]; }
+
+function driveGameOver3D(){
+  DG.running=false;
+  if(DG.raf) cancelAnimationFrame(DG.raf);
+  stopDriveListeners();
   S.driveScore=DG.score;
   document.getElementById('drive-final-score').textContent=DG.score;
-  var msg=DG.score<200?'Continue de pratiquer !':DG.score<500?'Pas mal, Sam !':DG.score<1000?'Très bon score !':'Sam légendaire au volant !';
+  var msg=DG.score<300?'Continue de pratiquer !':DG.score<800?'Pas mal, Sam !':DG.score<1500?'Très bon score !':'Sam légendaire au volant !';
   document.getElementById('drive-final-msg').textContent=msg;
   document.getElementById('drive-game').style.display='none';
   document.getElementById('drive-over').style.display='flex';
 }
-
-
 
 /* ══ SITUATIONS ══ */
 function initSituations(){S.sitIdx=0;S.sitScore=0;S.sitAnswers=[];renderSitPips();renderSitCard();document.getElementById('sit-summary-area').style.display='none';document.getElementById('btn-sit-next').style.display='none';}
