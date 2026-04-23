@@ -266,6 +266,23 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 .nav-tab.locked:active{transform:none;}
 .nav-lock{position:absolute;top:3px;right:6px;font-size:9px;opacity:0.6;}
 
+
+@keyframes bombShake{
+  0%{transform:translate(0,0) rotate(0deg);}
+  15%{transform:translate(-8px,4px) rotate(-3deg);}
+  30%{transform:translate(8px,-4px) rotate(3deg);}
+  45%{transform:translate(-6px,6px) rotate(-2deg);}
+  60%{transform:translate(6px,-2px) rotate(2deg);}
+  75%{transform:translate(-4px,4px) rotate(-1deg);}
+  90%{transform:translate(4px,-2px) rotate(1deg);}
+  100%{transform:translate(0,0) rotate(0deg);}
+}
+@keyframes bounceIn{
+  0%{opacity:0;transform:scale(0.3);}
+  50%{transform:scale(1.15);}
+  70%{transform:scale(0.95);}
+  100%{opacity:1;transform:scale(1);}
+}
 </style>
 </head>
 <body>
@@ -323,17 +340,15 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 </div>
 
 
-<!-- S2: TIRAGE AU SORT SAM -->
+<!-- S2: TIRAGE AU SORT SAM — BOMBE -->
 <div class="screen" id="s2">
   <div class="tag tc">Acte 2 — Qui est Sam ce soir ?</div>
 
-  <!-- PHASE 1 : Saisie des prénoms -->
+  <!-- PHASE 1 : Saisie -->
   <div id="draw-input" style="width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center;">
-    <div style="font-size:52px;text-align:center;margin-bottom:1rem;animation:fadeUp 0.4s ease both;">🎰</div>
-    <p style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;text-transform:uppercase;text-align:center;margin-bottom:0.4rem;animation:fadeUp 0.4s ease 0.1s both;">Qui est dans le groupe ce soir ?</p>
-    <p class="sub" style="margin-bottom:1.5rem;animation:fadeUp 0.4s ease 0.2s both;">Ajoute les prénoms un par un — la machine désignera le Sam.</p>
-
-    <!-- Champ d'ajout -->
+    <div style="font-size:60px;text-align:center;margin-bottom:1rem;animation:fadeUp 0.4s ease both;">💣</div>
+    <p style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;text-transform:uppercase;text-align:center;margin-bottom:0.4rem;animation:fadeUp 0.4s ease 0.1s both;">Qui est dans le groupe ?</p>
+    <p class="sub" style="margin-bottom:1.5rem;animation:fadeUp 0.4s ease 0.2s both;">Ajoute les prénoms. La bombe désigne le Sam.</p>
     <div style="display:flex;gap:8px;width:100%;margin-bottom:1rem;animation:fadeUp 0.4s ease 0.3s both;">
       <input id="draw-inp" class="inp" type="text" placeholder="Prénom…" maxlength="16" autocomplete="off"
         style="margin:0;flex:1;font-size:18px;padding:13px 16px;"
@@ -341,60 +356,55 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
       <button onclick="addDrawName()" style="background:var(--y);color:#000;border:none;border-radius:40px;padding:0 20px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;cursor:pointer;flex-shrink:0;text-transform:uppercase;">+</button>
     </div>
     <p class="err" id="draw-err" style="margin-bottom:0.5rem;min-height:18px;"></p>
-
-    <!-- Liste des prénoms ajoutés -->
     <div id="draw-list" style="width:100%;display:flex;flex-wrap:wrap;gap:8px;min-height:44px;margin-bottom:1.5rem;"></div>
-
-    <button class="btn btn-y" id="btn-draw-start" onclick="startDraw()" disabled style="opacity:0.35;">
-      Lancer le tirage →
-    </button>
+    <button class="btn btn-y" id="btn-draw-start" onclick="startDraw()" disabled style="opacity:0.35;">Allumer la mèche 💣</button>
   </div>
 
-  <!-- PHASE 2 : Machine à sous -->
+  <!-- PHASE 2 : Bombe -->
   <div id="draw-machine" style="display:none;width:100%;max-width:400px;flex-direction:column;align-items:center;">
-    <p style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:1.25rem;">Tirage en cours…</p>
 
-    <!-- Tambour machine à sous -->
-    <div style="position:relative;width:100%;display:flex;justify-content:center;margin-bottom:1.5rem;">
-      <!-- Lignes de repère -->
-      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--y),transparent);z-index:2;"></div>
-      <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--y),transparent);z-index:2;"></div>
-      <!-- Flèches latérales -->
-      <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:20px;z-index:3;color:var(--y);">▶</div>
-      <div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:20px;z-index:3;color:var(--y);">◀</div>
-      <!-- Fenêtre du tambour -->
-      <div style="width:240px;height:82px;overflow:hidden;border:2px solid var(--y);border-radius:12px;background:var(--s1);box-shadow:0 0 30px rgba(255,207,0,0.2);position:relative;">
-        <div id="draw-reel" style="position:absolute;left:0;right:0;top:0;will-change:transform;"></div>
-      </div>
+    <!-- Bombe SVG animée -->
+    <div style="position:relative;width:160px;height:160px;margin-bottom:1.5rem;">
+      <svg id="bomb-svg" width="160" height="160" viewBox="0 0 160 160">
+        <!-- Corps bombe -->
+        <circle cx="82" cy="95" r="52" fill="#1a1a1a" stroke="#333" stroke-width="3"/>
+        <!-- Reflet -->
+        <ellipse cx="65" cy="75" rx="14" ry="9" fill="rgba(255,255,255,0.08)" transform="rotate(-30,65,75)"/>
+        <!-- Mèche -->
+        <path id="bomb-fuse" d="M82 43 Q100 20 115 10" fill="none" stroke="#cc8800" stroke-width="4" stroke-linecap="round"/>
+        <!-- Étincelle (point animé au bout de la mèche) -->
+        <circle id="bomb-spark" cx="115" cy="10" r="5" fill="#FFCF00">
+          <animate attributeName="r" values="5;8;4;7;5" dur="0.3s" repeatCount="indefinite"/>
+          <animate attributeName="fill" values="#FFCF00;#FF6600;#FFCF00;#FF4400;#FFCF00" dur="0.3s" repeatCount="indefinite"/>
+        </circle>
+        <!-- Cerceaux métal -->
+        <path d="M34 95 Q34 47 82 47 Q130 47 130 95" fill="none" stroke="#444" stroke-width="5" stroke-linecap="round"/>
+        <path d="M36 110 Q34 140 82 143 Q130 140 128 110" fill="none" stroke="#444" stroke-width="5" stroke-linecap="round"/>
+      </svg>
+      <!-- Timer au centre de la bombe -->
+      <div id="bomb-timer" style="position:absolute;top:50%;left:50%;transform:translate(-44%,-38%);font-family:'Barlow Condensed',sans-serif;font-size:42px;font-weight:900;color:#FFCF00;text-shadow:0 0 20px rgba(255,207,0,0.8);line-height:1;"></div>
     </div>
 
-    <p id="draw-suspense" style="font-size:13px;color:var(--muted2);font-style:italic;text-align:center;min-height:20px;"></p>
+    <!-- Prénoms qui clignotent -->
+    <div id="bomb-names" style="width:100%;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:1.5rem;min-height:60px;"></div>
+
+    <p id="bomb-msg" style="font-size:14px;color:var(--muted);font-style:italic;text-align:center;min-height:20px;"></p>
   </div>
 
-  <!-- PHASE 3 : Résultat -->
+  <!-- PHASE 3 : Explosion + Résultat -->
   <div id="draw-result" style="display:none;width:100%;max-width:400px;flex-direction:column;align-items:center;">
-    <div style="font-size:18px;font-weight:600;color:var(--muted);text-align:center;margin-bottom:0.75rem;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.08em;">Ce soir, le Sam c'est</div>
-
-    <!-- Carte résultat -->
+    <div id="explosion-emoji" style="font-size:80px;text-align:center;margin-bottom:1rem;"></div>
+    <div style="font-size:16px;font-weight:600;color:var(--muted);text-align:center;margin-bottom:0.75rem;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.08em;">La bombe a choisi…</div>
     <div style="width:100%;background:var(--s2);border:3px solid var(--y);border-radius:20px;padding:2rem 1.5rem;text-align:center;margin-bottom:1.5rem;position:relative;overflow:hidden;box-shadow:0 0 60px rgba(255,207,0,0.15);">
       <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--m),var(--y),var(--c));"></div>
-      <!-- Logo SAM -->
       <div style="display:flex;justify-content:center;margin-bottom:1rem;">
-        <svg width="56" height="56" viewBox="0 0 100 100" fill="none">
-          <circle cx="50" cy="50" r="46" fill="white" stroke="black" stroke-width="5.5"/>
-          <circle cx="33" cy="42" r="13.5" fill="none" stroke="black" stroke-width="5"/>
-          <circle cx="33" cy="42" r="3.3" fill="black"/>
-          <circle cx="62" cy="42" r="13.5" fill="none" stroke="black" stroke-width="5"/>
-          <circle cx="62" cy="42" r="3.3" fill="black"/>
-          <path d="M 37 67 A 26 26 0 0 0 63 67" fill="none" stroke="black" stroke-width="5" stroke-linecap="square"/>
-        </svg>
+        <svg width="52" height="52" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="46" fill="white" stroke="black" stroke-width="5.5"/><circle cx="33" cy="42" r="13.5" fill="none" stroke="black" stroke-width="5"/><circle cx="33" cy="42" r="3.3" fill="black"/><circle cx="62" cy="42" r="13.5" fill="none" stroke="black" stroke-width="5"/><circle cx="62" cy="42" r="3.3" fill="black"/><path d="M 37 67 A 26 26 0 0 0 63 67" fill="none" stroke="black" stroke-width="5" stroke-linecap="square"/></svg>
       </div>
-      <div id="draw-winner-name" style="font-family:'Barlow Condensed',sans-serif;font-size:clamp(42px,12vw,64px);font-weight:900;color:var(--y);line-height:1;text-transform:uppercase;letter-spacing:-0.02em;margin-bottom:0.5rem;animation:stampIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both;"></div>
-      <div style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:1rem;" id="draw-winner-msg"></div>
+      <div id="draw-winner-name" style="font-family:'Barlow Condensed',sans-serif;font-size:clamp(42px,12vw,64px);font-weight:900;color:var(--y);line-height:1;text-transform:uppercase;letter-spacing:-0.02em;margin-bottom:0.5rem;"></div>
+      <div id="draw-winner-msg" style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:1rem;"></div>
       <div style="display:inline-block;background:var(--y);color:#000;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:900;padding:5px 16px;border-radius:40px;letter-spacing:0.1em;text-transform:uppercase;">SAM DE LA SOIRÉE</div>
     </div>
-
-    <button class="btn btn-g" onclick="resetDraw()" style="margin-bottom:0.5rem;">Retirer un autre nom</button>
+    <button class="btn btn-g" onclick="resetDraw()" style="margin-bottom:0.5rem;">Retirer ce prénom et relancer</button>
     <button class="btn btn-y" onclick="transition('s3','Acte 3','La soirée en images')">Continuer →</button>
   </div>
 </div>
@@ -616,7 +626,7 @@ var S={
 /* ══ NAVIGATION PAR ONGLETS ══ */
 var NAV_ACTES = [
   {id:'s1', label:'Quiz',       emoji:'🧠', unlocked:false},
-  {id:'s2', label:'Tirage',     emoji:'🎰', unlocked:false},
+  {id:'s2', label:'Tirage',     emoji:'💣', unlocked:false},
   {id:'s3', label:'Situations', emoji:'🎭', unlocked:false},
   {id:'s4', label:'Bar',        emoji:'🍹', unlocked:false},
   {id:'s5', label:'Carte',      emoji:'⭐', unlocked:false},
@@ -761,9 +771,11 @@ function flashScore(text){var el=document.getElementById('score-flash');el.textC
 
 /* ══ TIRAGE AU SORT SAM ══ */
 var DRAW = {
-  names: [],       /* liste des prénoms saisis */
+  names:  [],
   winner: null,
-  spinning: false
+  running: false,
+  timerInt: null,
+  highlightInt: null
 };
 
 var DRAW_MSGS = [
@@ -775,164 +787,209 @@ var DRAW_MSGS = [
 ];
 
 function initDrawScreen(){
-  DRAW.names = [];
-  DRAW.winner = null;
-  DRAW.spinning = false;
-  document.getElementById('draw-input').style.display  = 'flex';
-  document.getElementById('draw-machine').style.display = 'none';
-  document.getElementById('draw-result').style.display  = 'none';
-  document.getElementById('draw-list').innerHTML = '';
-  document.getElementById('draw-inp').value = '';
-  document.getElementById('draw-err').textContent = '';
-  document.getElementById('btn-draw-start').disabled = true;
-  document.getElementById('btn-draw-start').style.opacity = '0.35';
+  DRAW.names=[];DRAW.winner=null;DRAW.running=false;
+  if(DRAW.timerInt){clearInterval(DRAW.timerInt);DRAW.timerInt=null;}
+  if(DRAW.highlightInt){clearInterval(DRAW.highlightInt);DRAW.highlightInt=null;}
+  document.getElementById('draw-input').style.display='flex';
+  document.getElementById('draw-machine').style.display='none';
+  document.getElementById('draw-result').style.display='none';
+  document.getElementById('draw-list').innerHTML='';
+  document.getElementById('draw-inp').value='';
+  document.getElementById('draw-err').textContent='';
+  document.getElementById('btn-draw-start').disabled=true;
+  document.getElementById('btn-draw-start').style.opacity='0.35';
 }
 
 function addDrawName(){
-  var val = document.getElementById('draw-inp').value.trim();
-  var err = document.getElementById('draw-err');
-  if(!val){ err.textContent = 'Entre un prénom.'; return; }
-  if(DRAW.names.includes(val)){ err.textContent = val + ' est déjà dans la liste.'; return; }
-  if(DRAW.names.length >= 10){ err.textContent = 'Maximum 10 personnes.'; return; }
-  err.textContent = '';
+  var val=document.getElementById('draw-inp').value.trim();
+  var err=document.getElementById('draw-err');
+  if(!val){err.textContent='Entre un prénom.';return;}
+  if(DRAW.names.includes(val)){err.textContent=val+' est déjà dans la liste.';return;}
+  if(DRAW.names.length>=10){err.textContent='Maximum 10 personnes.';return;}
+  err.textContent='';
   DRAW.names.push(val);
-  document.getElementById('draw-inp').value = '';
+  document.getElementById('draw-inp').value='';
   document.getElementById('draw-inp').focus();
   renderDrawList();
 }
 
 function removeDrawName(name){
-  DRAW.names = DRAW.names.filter(function(n){ return n !== name; });
+  DRAW.names=DRAW.names.filter(function(n){return n!==name;});
   renderDrawList();
 }
 
 function renderDrawList(){
-  var el = document.getElementById('draw-list');
-  el.innerHTML = '';
+  var el=document.getElementById('draw-list');
+  el.innerHTML='';
   DRAW.names.forEach(function(name){
-    var tag = document.createElement('div');
-    tag.style.cssText = 'display:inline-flex;align-items:center;gap:6px;background:var(--s2);border:1.5px solid var(--border2);border-radius:40px;padding:6px 12px 6px 14px;font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:var(--text);animation:fadeUp 0.25s ease both;';
-    var nameSpan = document.createElement('span');
-    nameSpan.textContent = name;
+    var tag=document.createElement('div');
+    tag.style.cssText='display:inline-flex;align-items:center;gap:6px;background:var(--s2);border:1.5px solid var(--border2);border-radius:40px;padding:6px 12px 6px 14px;font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:700;color:var(--text);animation:fadeUp 0.25s ease both;';
+    var nameSpan=document.createElement('span');
+    nameSpan.textContent=name;
     tag.appendChild(nameSpan);
-    var delBtn = document.createElement('button');
-    delBtn.textContent = '\u00d7';
-    delBtn.style.cssText = 'background:rgba(255,79,79,0.15);border:none;border-radius:50%;width:18px;height:18px;cursor:pointer;color:#FF6B6B;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;';
-    (function(n){ delBtn.addEventListener('click', function(){ removeDrawName(n); }); })(name);
+    var delBtn=document.createElement('button');
+    delBtn.textContent='×';
+    delBtn.style.cssText='background:rgba(255,79,79,0.15);border:none;border-radius:50%;width:18px;height:18px;cursor:pointer;color:#FF6B6B;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;';
+    (function(n){delBtn.addEventListener('click',function(){removeDrawName(n);});})(name);
     tag.appendChild(delBtn);
     el.appendChild(tag);
   });
-  var btn = document.getElementById('btn-draw-start');
-  btn.disabled = DRAW.names.length < 2;
-  btn.style.opacity = DRAW.names.length < 2 ? '0.35' : '1';
+  var btn=document.getElementById('btn-draw-start');
+  btn.disabled=DRAW.names.length<2;
+  btn.style.opacity=DRAW.names.length<2?'0.35':'1';
 }
 
 function startDraw(){
-  if(DRAW.names.length < 2 || DRAW.spinning) return;
-  DRAW.spinning = true;
+  if(DRAW.names.length<2||DRAW.running) return;
+  DRAW.running=true;
+  DRAW.winner=DRAW.names[Math.floor(Math.random()*DRAW.names.length)];
 
-  /* Passer à la phase machine */
-  document.getElementById('draw-input').style.display   = 'none';
-  document.getElementById('draw-machine').style.display = 'flex';
+  document.getElementById('draw-input').style.display='none';
+  document.getElementById('draw-machine').style.display='flex';
 
-  /* Choisir le gagnant maintenant (mais révéler après l'animation) */
-  DRAW.winner = DRAW.names[Math.floor(Math.random() * DRAW.names.length)];
+  /* ── Durée totale en fonction du nb de joueurs (5-10s) ── */
+  var totalMs = 5000 + DRAW.names.length * 400;
+  var elapsed = 0;
+  var tickMs  = 100; /* tick de base du compte à rebours */
 
-  /* Construire le tambour : liste longue qui se termine sur le gagnant */
-  var reel = document.getElementById('draw-reel');
-  reel.innerHTML = '';
+  /* ── Rendre le compteur dans la bombe ── */
+  var displaySecs = Math.ceil(totalMs / 1000);
+  var timerEl = document.getElementById('bomb-timer');
+  timerEl.textContent = displaySecs;
 
-  /* Hauteur de chaque item */
-  var itemH = 82;
+  /* ── Rendre les noms cliquables ── */
+  renderBombNames();
 
-  /* Générer une longue séquence aléatoire + le gagnant en dernière position */
-  var sequence = [];
-  var totalItems = 28 + Math.floor(Math.random() * 8); /* 28-35 items */
-  for(var i = 0; i < totalItems - 1; i++){
-    sequence.push(DRAW.names[Math.floor(Math.random() * DRAW.names.length)]);
+  /* ── Messages de suspense ── */
+  var bombMsgs = ['La mèche brûle…','Plus que quelques secondes…','Qui va sauter ?','La bombe tremble…','3… 2… 1…'];
+  var msgEl = document.getElementById('bomb-msg');
+  msgEl.textContent = bombMsgs[0];
+
+  /* ── Vitesse de surlignage : commence lente, accélère ── */
+  var currentIdx = 0;
+  var highlightDelay = 400; /* ms entre deux surlignages */
+  var minDelay = 60;
+
+  function highlightNext(){
+    /* Surligner le prénom courant */
+    var nameEls = document.querySelectorAll('.bomb-name-tag');
+    nameEls.forEach(function(el,i){
+      if(i===currentIdx){
+        el.style.background='var(--y)';
+        el.style.color='#000';
+        el.style.transform='scale(1.12)';
+        el.style.boxShadow='0 0 18px rgba(255,207,0,0.6)';
+      } else {
+        el.style.background='var(--s2)';
+        el.style.color='var(--muted)';
+        el.style.transform='scale(1)';
+        el.style.boxShadow='none';
+      }
+    });
+    currentIdx=(currentIdx+1)%DRAW.names.length;
+
+    /* Accélérer progressivement */
+    var progress=elapsed/totalMs;
+    highlightDelay=Math.max(minDelay, 400-Math.floor(progress*340));
+    DRAW.highlightInt=setTimeout(highlightNext, highlightDelay);
   }
-  sequence.push(DRAW.winner); /* toujours finir sur le gagnant */
+  highlightNext();
 
-  /* Remplir le DOM */
-  sequence.forEach(function(name, idx){
-    var item = document.createElement('div');
-    item.style.cssText = 'height:' + itemH + 'px;display:flex;align-items:center;justify-content:center;' +
-      'font-family:Barlow Condensed,sans-serif;font-size:28px;font-weight:900;text-transform:uppercase;' +
-      'letter-spacing:0.02em;color:' + (idx === sequence.length-1 ? '#FFCF00' : 'rgba(242,242,240,0.6)') + ';';
-    item.textContent = name;
-    reel.appendChild(item);
-  });
+  /* ── Compte à rebours ── */
+  DRAW.timerInt=setInterval(function(){
+    elapsed+=tickMs;
+    var secsLeft=Math.ceil((totalMs-elapsed)/1000);
+    timerEl.textContent=secsLeft>0?secsLeft:'💥';
 
-  /* Position finale : dernier item centré dans la fenêtre */
-  var finalY = -(sequence.length - 1) * itemH;
-
-  /* Animation CSS via requestAnimationFrame avec easing custom */
-  var startTime = null;
-  var duration  = 3200; /* ms */
-  var startPos  = 0;
-  var endPos    = finalY;
-
-  /* Messages de suspense */
-  var msgs = ['Consultation des étoiles…','Le destin hésite…','Presque…','C\u2019est lui\u2026 ou elle\u2026','Le verdict tombe !'];
-  var msgEl = document.getElementById('draw-suspense');
-  var msgIdx = 0;
-  var msgInterval = setInterval(function(){
-    msgEl.textContent = msgs[Math.min(msgIdx, msgs.length-1)];
-    msgIdx++;
-    if(msgIdx >= msgs.length) clearInterval(msgInterval);
-  }, duration / msgs.length);
-
-  function easeOutQuart(t){ return 1 - Math.pow(1-t, 4); }
-
-  function animate(ts){
-    if(!startTime) startTime = ts;
-    var elapsed = ts - startTime;
-    var progress = Math.min(elapsed / duration, 1);
-    var eased = easeOutQuart(progress);
-    var currentY = startPos + (endPos - startPos) * eased;
-    reel.style.transform = 'translateY(' + currentY + 'px)';
-
-    if(progress < 1){
-      requestAnimationFrame(animate);
-    } else {
-      /* Arrivée — petit rebond */
-      reel.style.transition = 'transform 0.18s cubic-bezier(0.34,1.56,0.64,1)';
-      reel.style.transform = 'translateY(' + (finalY + 8) + 'px)';
-      setTimeout(function(){
-        reel.style.transform = 'translateY(' + finalY + 'px)';
-      }, 180);
-
-      clearInterval(msgInterval);
-      msgEl.textContent = '';
-
-      /* Révéler le résultat */
-      setTimeout(showDrawResult, 400);
+    /* Changer couleur quand urgence */
+    if(secsLeft<=3){
+      timerEl.style.color='#FF4F4F';
+      timerEl.style.textShadow='0 0 20px rgba(255,79,79,0.9)';
+      /* Faire trembler la bombe */
+      var bomb=document.getElementById('bomb-svg');
+      var shake=Math.round(Math.random()*6-3);
+      bomb.style.transform='translateX('+shake+'px) rotate('+(shake*0.5)+'deg)';
     }
-  }
-  requestAnimationFrame(animate);
+
+    /* Mettre à jour le message */
+    var msgIdx=Math.floor((elapsed/totalMs)*bombMsgs.length);
+    msgEl.textContent=bombMsgs[Math.min(msgIdx,bombMsgs.length-1)];
+
+    if(elapsed>=totalMs){
+      clearInterval(DRAW.timerInt);
+      clearTimeout(DRAW.highlightInt);
+      DRAW.timerInt=null; DRAW.highlightInt=null;
+      explode();
+    }
+  }, tickMs);
+}
+
+function renderBombNames(){
+  var el=document.getElementById('bomb-names');
+  el.innerHTML='';
+  DRAW.names.forEach(function(name){
+    var tag=document.createElement('div');
+    tag.className='bomb-name-tag';
+    tag.style.cssText='padding:8px 18px;border-radius:40px;background:var(--s2);border:1.5px solid var(--border2);font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:var(--muted);transition:all 0.12s cubic-bezier(0.34,1.56,0.64,1);';
+    tag.textContent=name;
+    el.appendChild(tag);
+  });
+}
+
+function explode(){
+  DRAW.running=false;
+
+  /* Flash rouge plein écran */
+  var flash=document.createElement('div');
+  flash.style.cssText='position:fixed;inset:0;background:#FF2200;z-index:999;pointer-events:none;opacity:0.85;';
+  document.body.appendChild(flash);
+
+  /* Faire trembler massivement */
+  document.body.style.animation='bombShake 0.4s ease';
+
+  setTimeout(function(){
+    flash.remove();
+    document.body.style.animation='';
+    document.getElementById('bomb-svg').style.transform='';
+    showDrawResult();
+  }, 300);
 }
 
 function showDrawResult(){
-  document.getElementById('draw-machine').style.display = 'none';
-  document.getElementById('draw-result').style.display  = 'flex';
-  document.getElementById('draw-winner-name').textContent = DRAW.winner;
-  document.getElementById('draw-winner-msg').textContent  = DRAW_MSGS[Math.floor(Math.random() * DRAW_MSGS.length)];
-  DRAW.spinning = false;
+  document.getElementById('draw-machine').style.display='none';
+  document.getElementById('draw-result').style.display='flex';
 
-  /* Confettis rapides */
-  var CC=['#FFCF00','#00B0FF','#12CCBD','#FA26FA','#9C45FF'];
-  for(var i=0;i<50;i++){
+  /* Emoji explosion animé */
+  var exEl=document.getElementById('explosion-emoji');
+  exEl.textContent='💥';
+  exEl.style.animation='bounceIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both';
+  setTimeout(function(){
+    exEl.textContent='🏆';
+    exEl.style.animation='stampIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both';
+  },800);
+
+  /* Nom gagnant */
+  var nameEl=document.getElementById('draw-winner-name');
+  nameEl.textContent=DRAW.winner;
+  nameEl.style.animation='none';
+  void nameEl.offsetWidth;
+  nameEl.style.animation='stampIn 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.6s both';
+
+  document.getElementById('draw-winner-msg').textContent=DRAW_MSGS[Math.floor(Math.random()*DRAW_MSGS.length)];
+
+  /* Confettis */
+  var CC=['#FFCF00','#00B0FF','#12CCBD','#FA26FA','#9C45FF','#FF6B6B'];
+  for(var i=0;i<60;i++){
     (function(d){setTimeout(function(){
       var el=document.createElement('div');
-      el.style.cssText='position:fixed;pointer-events:none;z-index:900;border-radius:2px;';
-      var col=CC[Math.floor(Math.random()*CC.length)];
-      var x=Math.random()*100,sz=5+Math.random()*7;
-      el.style.left=x+'vw'; el.style.top='-10px';
-      el.style.width=sz+'px'; el.style.height=sz+'px';
+      el.style.cssText='position:fixed;pointer-events:none;z-index:900;';
+      var col=CC[Math.floor(Math.random()*CC.length)],x=Math.random()*100,sz=5+Math.random()*8;
+      el.style.left=x+'vw';el.style.top='-10px';
+      el.style.width=sz+'px';el.style.height=sz+'px';
       el.style.background=col;
       el.style.borderRadius=Math.random()>0.5?'50%':'2px';
       document.body.appendChild(el);
-      var t0=performance.now(),dur=1000+Math.random()*800,dx=(Math.random()-0.5)*15;
+      var t0=performance.now(),dur=1000+Math.random()*800,dx=(Math.random()-0.5)*18;
       function fall(ts){
         var p=Math.min((ts-t0)/dur,1);
         el.style.top=(p*(window.innerHeight+20)-10)+'px';
@@ -941,20 +998,21 @@ function showDrawResult(){
         if(p<1)requestAnimationFrame(fall);else el.remove();
       }
       requestAnimationFrame(fall);
-    },d);})(i*40+Math.random()*150);
+    },d);})(i*40+Math.random()*200);
   }
 }
 
 function resetDraw(){
-  /* Retirer le gagnant et relancer */
-  DRAW.names = DRAW.names.filter(function(n){ return n !== DRAW.winner; });
-  DRAW.winner = null;
-  if(DRAW.names.length < 2){
+  if(DRAW.timerInt){clearInterval(DRAW.timerInt);DRAW.timerInt=null;}
+  if(DRAW.highlightInt){clearTimeout(DRAW.highlightInt);DRAW.highlightInt=null;}
+  DRAW.names=DRAW.names.filter(function(n){return n!==DRAW.winner;});
+  DRAW.winner=null;
+  if(DRAW.names.length<2){
     initDrawScreen();
   } else {
-    document.getElementById('draw-result').style.display  = 'none';
-    document.getElementById('draw-machine').style.display = 'none';
-    document.getElementById('draw-input').style.display   = 'flex';
+    document.getElementById('draw-result').style.display='none';
+    document.getElementById('draw-machine').style.display='none';
+    document.getElementById('draw-input').style.display='flex';
     renderDrawList();
   }
 }
